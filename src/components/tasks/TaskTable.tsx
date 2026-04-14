@@ -11,7 +11,7 @@ import { EmptyTasksState } from './EmptyTasksState'
 import { formatDate } from '@/lib/formatters'
 import { isOverdue } from '@/lib/dateHelpers'
 import { taskDetailPath } from '@/constants/routes'
-import { SOURCE_LABEL, SERVICE_LABEL } from '@/constants/taskConstants'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 import { cn } from '@/lib/utils'
 import type { Task } from '@/types/task'
 
@@ -68,6 +68,7 @@ export function TaskTable({
 }: TaskTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>('requestDate')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const { SOURCE_LABEL, SERVICE_LABEL } = useConfigOptions()
 
   const handleSort = (key: SortKey) => {
     if (key === sortKey) {

@@ -8,7 +8,7 @@ import { TaskPriorityBadge } from '@/components/tasks/TaskPriorityBadge'
 import { formatDate } from '@/lib/formatters'
 import { isOverdue } from '@/lib/dateHelpers'
 import { taskDetailPath, ROUTES } from '@/constants/routes'
-import { SOURCE_LABEL } from '@/constants/taskConstants'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 import { cn } from '@/lib/utils'
 import type { Task } from '@/types/task'
 
@@ -19,6 +19,7 @@ interface RecentTasksTableProps {
 
 export function RecentTasksTable({ tasks, loading }: RecentTasksTableProps) {
   const recent = tasks?.slice(0, 10)
+  const { SOURCE_LABEL } = useConfigOptions()
 
   return (
     <Card>

@@ -1,12 +1,15 @@
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Task } from '@/types/task'
-import { SOURCE_LABEL, SERVICE_LABEL } from '@/constants/taskConstants'
+import { getConfigSnapshot } from '@/hooks/useConfigOptions'
 import { STATUS_CONFIG } from '@/constants/statusConfig'
 import { PRIORITY_CONFIG } from '@/constants/priorityConfig'
 import { formatDate } from '@/lib/formatters'
 
 function tasksToCsv(tasks: Task[]): string {
+  // Pull live labels from the admin config store (works outside React via getState())
+  const { SOURCE_LABEL, SERVICE_LABEL } = getConfigSnapshot()
+
   const headers = [
     'Task ID',
     'Title',
@@ -27,8 +30,8 @@ function tasksToCsv(tasks: Task[]): string {
     `"${t.title.replace(/"/g, '""')}"`,
     STATUS_CONFIG[t.status].label,
     PRIORITY_CONFIG[t.priority].label,
-    SOURCE_LABEL[t.requestSource],
-    SERVICE_LABEL[t.serviceType],
+    SOURCE_LABEL[t.requestSource] ?? t.requestSource,
+    SERVICE_LABEL[t.serviceType] ?? t.serviceType,
     t.requesterName,
     t.assignedTo,
     formatDate(t.requestDate),

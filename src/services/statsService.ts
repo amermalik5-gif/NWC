@@ -4,11 +4,14 @@ import type { TaskFilters } from '@/types/filters'
 import { DEFAULT_FILTERS } from '@/types/filters'
 import { getAllTasks } from './taskService'
 import { isOverdue } from '@/lib/dateHelpers'
-import { SOURCE_LABEL, SERVICE_LABEL, SOURCE_COLORS, SERVICE_COLORS } from '@/constants/taskConstants'
+import { getConfigSnapshot } from '@/hooks/useConfigOptions'
 import type { RequestSource, ServiceType } from '@/types/task'
 
 export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Promise<TaskStats> {
   const tasks = await getAllTasks(filters)
+
+  // Pull live labels/colors from admin config store (works outside React via getState())
+  const { SOURCE_LABEL, SERVICE_LABEL, SOURCE_COLORS, SERVICE_COLORS, STATUS_LABEL, STATUS_COLORS, ALL_SOURCES } = getConfigSnapshot()
 
   const total = tasks.length
   const inProgress = tasks.filter((t) => t.status === 'in_progress').length
@@ -24,9 +27,9 @@ export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Prom
     sourceMap.set(t.requestSource, (sourceMap.get(t.requestSource) ?? 0) + 1)
   }
   const bySource: ChartDataPoint[] = Array.from(sourceMap.entries()).map(([key, value]) => ({
-    name: SOURCE_LABEL[key],
+    name: SOURCE_LABEL[key] ?? key,
     value,
-    color: SOURCE_COLORS[key],
+    color: SOURCE_COLORS[key] ?? '#94a3b8',
   })).sort((a, b) => b.value - a.value)
 
   // By service type
@@ -35,34 +38,20 @@ export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Prom
     serviceMap.set(t.serviceType, (serviceMap.get(t.serviceType) ?? 0) + 1)
   }
   const byServiceType: ChartDataPoint[] = Array.from(serviceMap.entries()).map(([key, value]) => ({
-    name: SERVICE_LABEL[key],
+    name: SERVICE_LABEL[key] ?? key,
     value,
-    color: SERVICE_COLORS[key],
+    color: SERVICE_COLORS[key] ?? '#94a3b8',
   })).sort((a, b) => b.value - a.value)
 
-  // By status
-  const statusLabels: Record<string, string> = {
-    new: 'New',
-    in_progress: 'In Progress',
-    on_hold: 'On Hold',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
-  }
-  const statusColors: Record<string, string> = {
-    new: '#94a3b8',
-    in_progress: '#f59e0b',
-    on_hold: '#f97316',
-    completed: '#10b981',
-    cancelled: '#ef4444',
-  }
+  // By status (use live labels and colors from config)
   const statusMap = new Map<string, number>()
   for (const t of tasks) {
     statusMap.set(t.status, (statusMap.get(t.status) ?? 0) + 1)
   }
   const byStatus: ChartDataPoint[] = Array.from(statusMap.entries()).map(([key, value]) => ({
-    name: statusLabels[key] ?? key,
+    name: STATUS_LABEL[key] ?? key,
     value,
-    color: statusColors[key] ?? '#94a3b8',
+    color: STATUS_COLORS[key] ?? '#94a3b8',
   }))
 
   // Monthly trend (last 6 months — use ALL tasks, not filtered, for trend chart)
@@ -86,15 +75,15 @@ export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Prom
     byMonth.push({ month: monthLabel, created, completed: completedInMonth })
   }
 
-  // Source breakdown table
-  const sourceStats: SourceStat[] = (['vp_office', 'infrastructure', 'it_operations', 'digital_transformation', 'strategy', 'applications', 'others'] as RequestSource[]).map((src) => {
+  // Source breakdown table — use live source list from config
+  const sourceStats: SourceStat[] = ALL_SOURCES.map((src) => {
     const srcTasks = tasks.filter((t) => t.requestSource === src)
     const srcTotal = srcTasks.length
     const srcInProgress = srcTasks.filter((t) => t.status === 'in_progress').length
     const srcCompleted = srcTasks.filter((t) => t.status === 'completed').length
     const rate = srcTotal > 0 ? Math.round((srcCompleted / srcTotal) * 100) : 0
     return {
-      source: SOURCE_LABEL[src],
+      source: SOURCE_LABEL[src] ?? src,
       total: srcTotal,
       inProgress: srcInProgress,
       completed: srcCompleted,

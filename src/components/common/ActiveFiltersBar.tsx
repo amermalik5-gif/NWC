@@ -1,16 +1,11 @@
 import { FilterBadge } from './FilterBadge'
 import { Button } from '@/components/ui/button'
 import { useFilters } from '@/hooks/useFilters'
-import {
-  REQUEST_SOURCES,
-  SERVICE_TYPES,
-  STATUS_OPTIONS,
-  PRIORITY_OPTIONS,
-} from '@/constants/taskConstants'
-import { MOCK_USERS } from '@/data/mock/users'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 
 export function ActiveFiltersBar() {
   const { filters, setFilter, resetFilters, activeFilterCount } = useFilters()
+  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } = useConfigOptions()
 
   if (activeFilterCount === 0) return null
 

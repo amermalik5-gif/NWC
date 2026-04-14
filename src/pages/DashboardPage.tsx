@@ -16,12 +16,18 @@ import { ActiveFiltersBar } from '@/components/common/ActiveFiltersBar'
 import { useTaskStats } from '@/hooks/useTaskStats'
 import { useAllTasks } from '@/hooks/useTasks'
 import { useFilters } from '@/hooks/useFilters'
+import { useAdminSettingsStore } from '@/admin/store/adminSettingsStore'
 import { ROUTES } from '@/constants/routes'
 
 export function DashboardPage() {
   const { filters } = useFilters()
   const { data: stats, isLoading: statsLoading } = useTaskStats(filters)
   const { data: allTasks, isLoading: tasksLoading } = useAllTasks(filters)
+
+  // Widget visibility controlled from the Admin → Dashboard Control page
+  const { settings } = useAdminSettingsStore()
+  const widgetVisible = (id: string) =>
+    settings.dashboardWidgets.find((w) => w.id === id)?.visible ?? true
 
   return (
     <>
@@ -44,26 +50,46 @@ export function DashboardPage() {
           <ActiveFiltersBar />
 
           {/* KPI Cards */}
-          <SummaryCards stats={stats} loading={statsLoading} />
+          {widgetVisible('summary-cards') && (
+            <SummaryCards stats={stats} loading={statsLoading} />
+          )}
 
-          {/* Charts row */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <TasksBySourceChart data={stats?.bySource} loading={statsLoading} />
-            <TasksByServiceChart data={stats?.byServiceType} loading={statsLoading} />
-            <TasksByStatusChart data={stats?.byStatus} loading={statsLoading} />
-          </div>
+          {/* Charts row — only render the row if at least one chart is visible */}
+          {(widgetVisible('source-chart') || widgetVisible('service-chart') || widgetVisible('status-chart')) && (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {widgetVisible('source-chart') && (
+                <TasksBySourceChart data={stats?.bySource} loading={statsLoading} />
+              )}
+              {widgetVisible('service-chart') && (
+                <TasksByServiceChart data={stats?.byServiceType} loading={statsLoading} />
+              )}
+              {widgetVisible('status-chart') && (
+                <TasksByStatusChart data={stats?.byStatus} loading={statsLoading} />
+              )}
+            </div>
+          )}
 
           {/* Trend chart */}
-          <MonthlyTrendChart data={stats?.byMonth} loading={statsLoading} />
+          {widgetVisible('monthly-trend') && (
+            <MonthlyTrendChart data={stats?.byMonth} loading={statsLoading} />
+          )}
 
           {/* Deadline + Source breakdown */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <UpcomingDeadlines tasks={allTasks} loading={tasksLoading} />
-            <SourceBreakdownTable data={stats?.sourceStats} loading={statsLoading} />
-          </div>
+          {(widgetVisible('upcoming-deadlines') || widgetVisible('source-breakdown')) && (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {widgetVisible('upcoming-deadlines') && (
+                <UpcomingDeadlines tasks={allTasks} loading={tasksLoading} />
+              )}
+              {widgetVisible('source-breakdown') && (
+                <SourceBreakdownTable data={stats?.sourceStats} loading={statsLoading} />
+              )}
+            </div>
+          )}
 
           {/* Recent tasks */}
-          <RecentTasksTable tasks={allTasks} loading={tasksLoading} />
+          {widgetVisible('recent-tasks') && (
+            <RecentTasksTable tasks={allTasks} loading={tasksLoading} />
+          )}
         </div>
       </PageWrapper>
     </>

@@ -8,7 +8,7 @@ import { TaskPriorityBadge } from './TaskPriorityBadge'
 import { formatDate } from '@/lib/formatters'
 import { isOverdue } from '@/lib/dateHelpers'
 import { taskEditPath } from '@/constants/routes'
-import { SOURCE_LABEL, SERVICE_LABEL } from '@/constants/taskConstants'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 import type { Task } from '@/types/task'
 
 interface TaskDetailPanelProps {
@@ -26,6 +26,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
   const overdue = isOverdue(task)
+  const { SOURCE_LABEL, SERVICE_LABEL } = useConfigOptions()
 
   return (
     <div className="space-y-6">

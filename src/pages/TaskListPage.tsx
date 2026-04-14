@@ -18,12 +18,7 @@ import { ExportButton } from '@/components/common/ExportButton'
 import { useTasks, useAllTasks } from '@/hooks/useTasks'
 import { useFilters } from '@/hooks/useFilters'
 import { useDebounce } from '@/hooks/useDebounce'
-import {
-  REQUEST_SOURCES,
-  SERVICE_TYPES,
-  STATUS_OPTIONS,
-  PRIORITY_OPTIONS,
-} from '@/constants/taskConstants'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 import { MOCK_USERS } from '@/data/mock/users'
 import { ROUTES } from '@/constants/routes'
 
@@ -50,6 +45,7 @@ export function TaskListPage() {
   const PAGE_SIZE = 20
   const { data, isLoading } = useTasks(filters, page, PAGE_SIZE)
   const { data: allFiltered } = useAllTasks(filters)
+  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } = useConfigOptions()
 
   return (
     <>

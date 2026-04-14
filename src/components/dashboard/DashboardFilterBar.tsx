@@ -9,18 +9,14 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { useFilters } from '@/hooks/useFilters'
-import {
-  REQUEST_SOURCES,
-  SERVICE_TYPES,
-  STATUS_OPTIONS,
-  PRIORITY_OPTIONS,
-} from '@/constants/taskConstants'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 import { MOCK_USERS } from '@/data/mock/users'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useEffect, useState } from 'react'
 
 export function DashboardFilterBar() {
   const { filters, setFilter, resetFilters, activeFilterCount } = useFilters()
+  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } = useConfigOptions()
   const [searchValue, setSearchValue] = useState(filters.search)
   const debouncedSearch = useDebounce(searchValue, 300)
 
