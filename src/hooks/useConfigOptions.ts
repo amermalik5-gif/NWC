@@ -6,11 +6,25 @@
  * • Dropdown arrays: only ACTIVE items, sorted by `order`
  * • Label / color maps: ALL items (so existing tasks display correctly even if
  *   a source is later deactivated)
+ * • ASSIGNEES: active users from adminUsersStore (for new task assignment)
+ * • ALL_ASSIGNEES: all users including inactive (for filters on existing tasks)
  */
 import { useAdminConfigStore } from '@/admin/store/adminConfigStore'
+import { useAdminUsersStore } from '@/admin/store/adminUsersStore'
 
 export function useConfigOptions() {
   const { sources, services, statuses, priorities } = useAdminConfigStore()
+  const { users } = useAdminUsersStore()
+
+  // ── Assignees ──────────────────────────────────────────────────────────────
+  // ASSIGNEES: active users only — for new task / reassignment dropdowns
+  const ASSIGNEES: string[] = users
+    .filter((u) => u.status === 'active')
+    .map((u) => u.name)
+
+  // ALL_ASSIGNEES: active + inactive — for filter dropdowns so you can still
+  // filter tasks that were assigned to a now-deactivated user
+  const ALL_ASSIGNEES: string[] = users.map((u) => u.name)
 
   // ── Active-only, ordered (for <Select> dropdowns) ──────────────────────────
   const REQUEST_SOURCES = sources
@@ -66,6 +80,8 @@ export function useConfigOptions() {
     PRIORITY_LABEL,
     SOURCE_COLORS,
     SERVICE_COLORS,
+    ASSIGNEES,
+    ALL_ASSIGNEES,
   }
 }
 
@@ -76,6 +92,9 @@ export function useConfigOptions() {
  */
 export function getConfigSnapshot() {
   const { sources, services, statuses } = useAdminConfigStore.getState()
+  const { users } = useAdminUsersStore.getState()
+  const ALL_ASSIGNEES = users.map((u) => u.name)
+  const ASSIGNEES = users.filter((u) => u.status === 'active').map((u) => u.name)
 
   const SOURCE_LABEL: Record<string, string> = Object.fromEntries(
     sources.map((i) => [i.value, i.label])
@@ -97,5 +116,5 @@ export function getConfigSnapshot() {
   )
   const ALL_SOURCES = sources.map((i) => i.value)
 
-  return { SOURCE_LABEL, SERVICE_LABEL, SOURCE_COLORS, SERVICE_COLORS, STATUS_LABEL, STATUS_COLORS, ALL_SOURCES }
+  return { SOURCE_LABEL, SERVICE_LABEL, SOURCE_COLORS, SERVICE_COLORS, STATUS_LABEL, STATUS_COLORS, ALL_SOURCES, ASSIGNEES, ALL_ASSIGNEES }
 }

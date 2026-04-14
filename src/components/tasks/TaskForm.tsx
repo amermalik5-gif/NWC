@@ -17,7 +17,6 @@ import { useCreateTask, useUpdateTask } from '@/hooks/useTaskMutations'
 import { useToast } from '@/hooks/useToast'
 import { taskSchema, type TaskFormValues } from '@/lib/taskSchema'
 import { useConfigOptions } from '@/hooks/useConfigOptions'
-import { MOCK_USERS } from '@/data/mock/users'
 import { taskDetailPath, ROUTES } from '@/constants/routes'
 import type { Task } from '@/types/task'
 
@@ -54,7 +53,7 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
   const { toast } = useToast()
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
-  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } = useConfigOptions()
+  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS, ASSIGNEES } = useConfigOptions()
 
   const {
     register,
@@ -164,7 +163,7 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
                   <SelectValue placeholder="Select team member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MOCK_USERS.map((user) => (
+                  {ASSIGNEES.map((user) => (
                     <SelectItem key={user} value={user}>{user}</SelectItem>
                   ))}
                 </SelectContent>

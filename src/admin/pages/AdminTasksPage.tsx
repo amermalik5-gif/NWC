@@ -19,8 +19,7 @@ import { useAllTasks } from '@/hooks/useTasks'
 import { useUpdateTask, useDeleteTask } from '@/hooks/useTaskMutations'
 import { useToast } from '@/hooks/useToast'
 import { DEFAULT_FILTERS } from '@/types/filters'
-import { SOURCE_LABEL, SERVICE_LABEL, REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/constants/taskConstants'
-import { MOCK_USERS } from '@/data/mock/users'
+import { useConfigOptions } from '@/hooks/useConfigOptions'
 import { formatDate } from '@/lib/formatters'
 import { isOverdue } from '@/lib/dateHelpers'
 import { cn } from '@/lib/utils'
@@ -31,6 +30,7 @@ export function AdminTasksPage() {
   const { mutate: updateTask } = useUpdateTask()
   const { mutate: deleteTask } = useDeleteTask()
   const { toast } = useToast()
+  const { SOURCE_LABEL, SERVICE_LABEL, REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS, ALL_ASSIGNEES } = useConfigOptions()
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all')
@@ -247,7 +247,7 @@ export function AdminTasksPage() {
               <SelectContent>
                 {bulkAction === 'status' && STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                 {bulkAction === 'priority' && PRIORITY_OPTIONS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                {bulkAction === 'assign' && MOCK_USERS.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                {bulkAction === 'assign' && ALL_ASSIGNEES.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

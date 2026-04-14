@@ -19,7 +19,6 @@ import { useTasks, useAllTasks } from '@/hooks/useTasks'
 import { useFilters } from '@/hooks/useFilters'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useConfigOptions } from '@/hooks/useConfigOptions'
-import { MOCK_USERS } from '@/data/mock/users'
 import { ROUTES } from '@/constants/routes'
 
 export function TaskListPage() {
@@ -45,7 +44,7 @@ export function TaskListPage() {
   const PAGE_SIZE = 20
   const { data, isLoading } = useTasks(filters, page, PAGE_SIZE)
   const { data: allFiltered } = useAllTasks(filters)
-  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } = useConfigOptions()
+  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS, ALL_ASSIGNEES } = useConfigOptions()
 
   return (
     <>
@@ -147,7 +146,7 @@ export function TaskListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Assignees</SelectItem>
-                {MOCK_USERS.map((user) => (
+                {ALL_ASSIGNEES.map((user) => (
                   <SelectItem key={user} value={user}>{user}</SelectItem>
                 ))}
               </SelectContent>

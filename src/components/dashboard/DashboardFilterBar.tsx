@@ -10,13 +10,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { useFilters } from '@/hooks/useFilters'
 import { useConfigOptions } from '@/hooks/useConfigOptions'
-import { MOCK_USERS } from '@/data/mock/users'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useEffect, useState } from 'react'
 
 export function DashboardFilterBar() {
   const { filters, setFilter, resetFilters, activeFilterCount } = useFilters()
-  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS } = useConfigOptions()
+  const { REQUEST_SOURCES, SERVICE_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS, ALL_ASSIGNEES } = useConfigOptions()
   const [searchValue, setSearchValue] = useState(filters.search)
   const debouncedSearch = useDebounce(searchValue, 300)
 
@@ -112,7 +111,7 @@ export function DashboardFilterBar() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Assignees</SelectItem>
-            {MOCK_USERS.map((user) => (
+            {ALL_ASSIGNEES.map((user) => (
               <SelectItem key={user} value={user}>{user}</SelectItem>
             ))}
           </SelectContent>
