@@ -10,14 +10,31 @@ export interface PaginatedResponse<T> {
   pageSize: number
 }
 
-let localTasks: Task[] = [...mockTasks]
+const STORAGE_KEY = 'nwc-tasks'
 
-let nextId = localTasks.length + 1
+function loadTasks(): Task[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) return JSON.parse(stored) as Task[]
+  } catch {}
+  return [...mockTasks]
+}
 
+function saveTasks(tasks: Task[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
+  } catch {}
+}
+
+let localTasks: Task[] = loadTasks()
+
+// Derive next ID from the highest existing task number so we never collide
 function generateTaskId(): string {
-  const id = `TASK-${String(nextId).padStart(3, '0')}`
-  nextId++
-  return id
+  const max = localTasks.reduce((acc, t) => {
+    const n = parseInt(t.id.replace('TASK-', ''), 10)
+    return isNaN(n) ? acc : Math.max(acc, n)
+  }, 0)
+  return `TASK-${String(max + 1).padStart(3, '0')}`
 }
 
 export async function getTasks(
@@ -62,6 +79,7 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
     updatedAt: now,
   }
   localTasks = [newTask, ...localTasks]
+  saveTasks(localTasks)
   return newTask
 }
 
@@ -75,10 +93,12 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ta
     updatedAt: new Date().toISOString(),
   }
   localTasks = localTasks.map((t) => (t.id === id ? updated : t))
+  saveTasks(localTasks)
   return updated
 }
 
 export async function deleteTask(id: string): Promise<void> {
   await new Promise((r) => setTimeout(r, 100))
   localTasks = localTasks.filter((t) => t.id !== id)
+  saveTasks(localTasks)
 }

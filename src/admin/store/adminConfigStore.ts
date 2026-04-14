@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { ConfigItem, ConfigCategory } from '@/admin/types'
 import { mockSources, mockServices, mockStatuses, mockPriorities } from '@/admin/data/mockConfig'
 
@@ -22,55 +23,66 @@ const categoryKey: Record<ConfigCategory, keyof AdminConfigStore> = {
   priority: 'priorities',
 }
 
-let nextConfigId = 100
+export const useAdminConfigStore = create<AdminConfigStore>()(
+  persist(
+    (set, get) => ({
+      sources: [...mockSources],
+      services: [...mockServices],
+      statuses: [...mockStatuses],
+      priorities: [...mockPriorities],
 
-export const useAdminConfigStore = create<AdminConfigStore>((set, get) => ({
-  sources: [...mockSources],
-  services: [...mockServices],
-  statuses: [...mockStatuses],
-  priorities: [...mockPriorities],
+      addItem: (category, data) => {
+        const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
+        // Derive unique numeric ID from existing items
+        const existing = get()[key] as ConfigItem[]
+        const maxNum = existing.reduce((acc, i) => {
+          const n = parseInt(i.id.replace(/^[a-z]+-/, ''), 10)
+          return isNaN(n) ? acc : Math.max(acc, n)
+        }, 0)
+        const newItem: ConfigItem = {
+          ...data,
+          id: `cfg-${maxNum + 1}`,
+          isSystem: false,
+          category,
+        }
+        set((s) => ({ [key]: [...(s[key] as ConfigItem[]), newItem] }))
+        return newItem
+      },
 
-  addItem: (category, data) => {
-    const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
-    const newItem: ConfigItem = {
-      ...data,
-      id: `cfg-${nextConfigId++}`,
-      isSystem: false,
-      category,
+      updateItem: (category, id, updates) => {
+        const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
+        set((s) => ({
+          [key]: (s[key] as ConfigItem[]).map((item) =>
+            item.id === id ? { ...item, ...updates } : item
+          ),
+        }))
+      },
+
+      deleteItem: (category, id) => {
+        const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
+        const item = (get()[key] as ConfigItem[]).find((i) => i.id === id)
+        if (item?.isSystem) return // protect system items
+        set((s) => ({
+          [key]: (s[key] as ConfigItem[]).filter((i) => i.id !== id),
+        }))
+      },
+
+      toggleActive: (category, id) => {
+        const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
+        set((s) => ({
+          [key]: (s[key] as ConfigItem[]).map((item) =>
+            item.id === id ? { ...item, isActive: !item.isActive } : item
+          ),
+        }))
+      },
+
+      reorder: (category, items) => {
+        const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
+        set({ [key]: items })
+      },
+    }),
+    {
+      name: 'nwc-admin-config',
     }
-    set((s) => ({ [key]: [...(s[key] as ConfigItem[]), newItem] }))
-    return newItem
-  },
-
-  updateItem: (category, id, updates) => {
-    const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
-    set((s) => ({
-      [key]: (s[key] as ConfigItem[]).map((item) =>
-        item.id === id ? { ...item, ...updates } : item
-      ),
-    }))
-  },
-
-  deleteItem: (category, id) => {
-    const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
-    const item = (get()[key] as ConfigItem[]).find((i) => i.id === id)
-    if (item?.isSystem) return // protect system items
-    set((s) => ({
-      [key]: (s[key] as ConfigItem[]).filter((i) => i.id !== id),
-    }))
-  },
-
-  toggleActive: (category, id) => {
-    const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
-    set((s) => ({
-      [key]: (s[key] as ConfigItem[]).map((item) =>
-        item.id === id ? { ...item, isActive: !item.isActive } : item
-      ),
-    }))
-  },
-
-  reorder: (category, items) => {
-    const key = categoryKey[category] as 'sources' | 'services' | 'statuses' | 'priorities'
-    set({ [key]: items })
-  },
-}))
+  )
+)
