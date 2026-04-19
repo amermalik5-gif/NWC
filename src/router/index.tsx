@@ -2,6 +2,8 @@ import { createBrowserRouter } from 'react-router-dom'
 
 // Main app
 import { AppShell } from '@/components/layout/AppShell'
+import { ProtectedAppRoute } from '@/components/auth/ProtectedAppRoute'
+import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { TaskListPage } from '@/pages/TaskListPage'
 import { TaskDetailPage } from '@/pages/TaskDetailPage'
@@ -25,10 +27,20 @@ import { DashboardControlPage } from '@/admin/pages/DashboardControlPage'
 import { SettingsPage } from '@/admin/pages/SettingsPage'
 
 export const router = createBrowserRouter([
-  // ── Main application ────────────────────────────────────────────────────────
+  // ── Main app — public login ──────────────────────────────────────────────────
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+
+  // ── Main application (protected) ────────────────────────────────────────────
   {
     path: '/',
-    element: <AppShell />,
+    element: (
+      <ProtectedAppRoute>
+        <AppShell />
+      </ProtectedAppRoute>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
       { path: ROUTES.TASKS, element: <TaskListPage /> },

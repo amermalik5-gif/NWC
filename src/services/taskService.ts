@@ -12,10 +12,29 @@ export interface PaginatedResponse<T> {
 
 const STORAGE_KEY = 'nwc-tasks'
 
+// Migrate persisted tasks from old schema to current schema
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function migrateTask(t: any): Task {
+  return {
+    ...t,
+    // serviceType (old singular) → serviceTypes (new array)
+    serviceTypes: Array.isArray(t.serviceTypes)
+      ? t.serviceTypes
+      : t.serviceType
+      ? [t.serviceType]
+      : ['presentation_design'],
+    // blocker field may be missing in old data
+    blocker: t.blocker !== undefined ? t.blocker : null,
+  }
+}
+
 function loadTasks(): Task[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) return JSON.parse(stored) as Task[]
+    if (stored) {
+      const parsed = JSON.parse(stored) as unknown[]
+      return parsed.map(migrateTask)
+    }
   } catch {}
   return [...mockTasks]
 }

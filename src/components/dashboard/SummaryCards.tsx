@@ -1,4 +1,4 @@
-import { ListChecks, CircleDot, Timer, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ListChecks, CircleDot, Timer, CheckCircle2, AlertCircle, Ban } from 'lucide-react'
 import { SummaryCard } from './SummaryCard'
 import type { TaskStats } from '@/types/chart'
 
@@ -9,7 +9,7 @@ interface SummaryCardsProps {
 
 export function SummaryCards({ stats, loading }: SummaryCardsProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       <SummaryCard
         label="Total Tasks"
         value={stats?.total ?? 0}
@@ -41,6 +41,15 @@ export function SummaryCards({ stats, loading }: SummaryCardsProps) {
         iconBg="bg-green-100"
         iconColor="text-green-600"
         loading={loading}
+      />
+      <SummaryCard
+        label="Blocked"
+        value={stats?.blocked ?? 0}
+        icon={Ban}
+        iconBg="bg-rose-100"
+        iconColor="text-rose-600"
+        loading={loading}
+        highlight={(stats?.blocked ?? 0) > 0}
       />
       <SummaryCard
         label="Overdue"

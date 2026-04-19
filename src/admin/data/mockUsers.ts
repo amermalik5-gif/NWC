@@ -4,6 +4,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-001',
     username: 'amerrawahneh',
+    password: 'Rawahneh97',
     name: 'Amer Rawahneh',
     email: 'amer.rawahneh@company.com',
     role: 'admin',
@@ -15,6 +16,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-002',
     username: 'sara.mohammed',
+    password: 'Sara@2025',
     name: 'Sara Mohammed',
     email: 'sara.mohammed@company.com',
     role: 'manager',
@@ -26,6 +28,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-003',
     username: 'ahmed.alrashid',
+    password: 'Ahmed@2025',
     name: 'Ahmed Al-Rashid',
     email: 'ahmed.alrashid@company.com',
     role: 'team_member',
@@ -37,6 +40,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-004',
     username: 'khalid.ibrahim',
+    password: 'Khalid@2025',
     name: 'Khalid Ibrahim',
     email: 'khalid.ibrahim@company.com',
     role: 'team_member',
@@ -48,6 +52,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-005',
     username: 'nour.hassan',
+    password: 'Nour@2025',
     name: 'Nour Hassan',
     email: 'nour.hassan@company.com',
     role: 'team_member',
@@ -59,6 +64,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-006',
     username: 'omar.abdullah',
+    password: 'Omar@2025',
     name: 'Omar Abdullah',
     email: 'omar.abdullah@company.com',
     role: 'team_member',
@@ -70,6 +76,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-007',
     username: 'lina.farid',
+    password: 'Lina@2025',
     name: 'Lina Farid',
     email: 'lina.farid@company.com',
     role: 'team_member',
@@ -81,6 +88,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-008',
     username: 'maya.yousef',
+    password: 'Maya@2025',
     name: 'Maya Yousef',
     email: 'maya.yousef@company.com',
     role: 'team_member',
@@ -92,6 +100,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-009',
     username: 'faisal.alamin',
+    password: 'Faisal@2025',
     name: 'Faisal Al-Amin',
     email: 'faisal.alamin@company.com',
     role: 'viewer',
@@ -103,6 +112,7 @@ export const mockAdminUsers: AdminUser[] = [
   {
     id: 'USR-010',
     username: 'rania.kareem',
+    password: 'Rania@2025',
     name: 'Rania Kareem',
     email: 'rania.kareem@company.com',
     role: 'team_member',

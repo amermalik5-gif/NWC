@@ -18,6 +18,7 @@ export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Prom
   const completed = tasks.filter((t) => t.status === 'completed').length
   const cancelled = tasks.filter((t) => t.status === 'cancelled').length
   const onHold = tasks.filter((t) => t.status === 'on_hold').length
+  const blocked = tasks.filter((t) => t.status === 'blocked').length
   const open = tasks.filter((t) => t.status === 'new' || t.status === 'in_progress' || t.status === 'on_hold').length
   const overdue = tasks.filter((t) => isOverdue(t)).length
 
@@ -32,10 +33,12 @@ export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Prom
     color: SOURCE_COLORS[key] ?? '#94a3b8',
   })).sort((a, b) => b.value - a.value)
 
-  // By service type
+  // By service type — each task may have multiple service types, count each occurrence
   const serviceMap = new Map<ServiceType, number>()
   for (const t of tasks) {
-    serviceMap.set(t.serviceType, (serviceMap.get(t.serviceType) ?? 0) + 1)
+    for (const svc of t.serviceTypes ?? []) {
+      serviceMap.set(svc, (serviceMap.get(svc) ?? 0) + 1)
+    }
   }
   const byServiceType: ChartDataPoint[] = Array.from(serviceMap.entries()).map(([key, value]) => ({
     name: SERVICE_LABEL[key] ?? key,
@@ -98,6 +101,7 @@ export async function getTaskStats(filters: TaskFilters = DEFAULT_FILTERS): Prom
     completed,
     cancelled,
     onHold,
+    blocked,
     overdue,
     bySource,
     byServiceType,

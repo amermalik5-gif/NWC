@@ -9,6 +9,8 @@ export interface TaskFilters {
   assignedTo: string | 'all'
   dateRangeStart: string | null
   dateRangeEnd: string | null
+  /** Which date field the range applies to */
+  dateFilterField: 'requestDate' | 'dueDate' | 'both'
 }
 
 export const DEFAULT_FILTERS: TaskFilters = {
@@ -20,4 +22,5 @@ export const DEFAULT_FILTERS: TaskFilters = {
   assignedTo: 'all',
   dateRangeStart: null,
   dateRangeEnd: null,
+  dateFilterField: 'dueDate',
 }

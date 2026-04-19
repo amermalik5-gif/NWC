@@ -1,4 +1,4 @@
-import { Search, X } from 'lucide-react'
+import { Search, X, CalendarRange } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -24,7 +24,8 @@ export function DashboardFilterBar() {
   }, [debouncedSearch, setFilter])
 
   return (
-    <div className="rounded-lg border bg-white p-4 shadow-sm">
+    <div className="rounded-lg border bg-white p-4 shadow-sm space-y-3">
+      {/* Row 1 — main filters */}
       <div className="flex flex-wrap gap-3">
         {/* Search */}
         <div className="relative min-w-[200px] flex-1">
@@ -130,6 +131,66 @@ export function DashboardFilterBar() {
           >
             <X className="h-4 w-4" />
             Clear ({activeFilterCount})
+          </Button>
+        )}
+      </div>
+
+      {/* Row 2 — date range */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+          <CalendarRange className="h-3.5 w-3.5" />
+          Date Filter
+        </div>
+
+        {/* Field selector */}
+        <Select
+          value={filters.dateFilterField}
+          onValueChange={(v) => setFilter('dateFilterField', v as typeof filters.dateFilterField)}
+        >
+          <SelectTrigger className="w-[140px] h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="dueDate">Due Date</SelectItem>
+            <SelectItem value="requestDate">Request Date</SelectItem>
+            <SelectItem value="both">Either Date</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* From */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500 whitespace-nowrap">From</span>
+          <Input
+            type="date"
+            value={filters.dateRangeStart ?? ''}
+            onChange={(e) => setFilter('dateRangeStart', e.target.value || null)}
+            className="h-8 w-[140px] text-xs"
+          />
+        </div>
+
+        {/* To */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500 whitespace-nowrap">To</span>
+          <Input
+            type="date"
+            value={filters.dateRangeEnd ?? ''}
+            onChange={(e) => setFilter('dateRangeEnd', e.target.value || null)}
+            className="h-8 w-[140px] text-xs"
+          />
+        </div>
+
+        {(filters.dateRangeStart || filters.dateRangeEnd) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs gap-1 text-slate-500"
+            onClick={() => {
+              setFilter('dateRangeStart', null)
+              setFilter('dateRangeEnd', null)
+            }}
+          >
+            <X className="h-3 w-3" />
+            Clear dates
           </Button>
         )}
       </div>

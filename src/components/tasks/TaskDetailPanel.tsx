@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Pencil, CalendarDays, User, Tag, Briefcase, Building2, StickyNote } from 'lucide-react'
+import { Pencil, CalendarDays, User, Tag, Briefcase, Building2, StickyNote, Ban } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -73,7 +73,14 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             <DetailRow label="Source" value={SOURCE_LABEL[task.requestSource]} />
-            <DetailRow label="Service" value={SERVICE_LABEL[task.serviceType]} />
+            <DetailRow
+              label="Service(s)"
+              value={
+                task.serviceTypes?.length
+                  ? task.serviceTypes.map((s) => SERVICE_LABEL[s] ?? s).join(', ')
+                  : '—'
+              }
+            />
             <DetailRow label="Requester" value={task.requesterName} />
             <DetailRow label="Assigned To" value={task.assignedTo} />
           </CardContent>
@@ -101,6 +108,21 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Blocker — shown only when task is blocked */}
+      {task.status === 'blocked' && task.blocker && (
+        <Card className="border-rose-200 bg-rose-50/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-rose-700">
+              <Ban className="h-4 w-4" />
+              Blocked — Reason
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-rose-800 whitespace-pre-wrap leading-relaxed">{task.blocker}</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Notes */}
       {task.notes && (

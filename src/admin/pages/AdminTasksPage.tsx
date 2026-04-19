@@ -200,7 +200,9 @@ export function AdminTasksPage() {
                         <p className="text-xs text-slate-400 truncate">{task.requesterName}</p>
                       </td>
                       <td className="px-3 py-3 text-xs text-slate-500 whitespace-nowrap">{SOURCE_LABEL[task.requestSource]}</td>
-                      <td className="px-3 py-3 text-xs text-slate-500 max-w-[130px] truncate">{SERVICE_LABEL[task.serviceType]}</td>
+                      <td className="px-3 py-3 text-xs text-slate-500 max-w-[130px] truncate">
+                        {task.serviceTypes?.map((s) => SERVICE_LABEL[s] ?? s).join(', ') ?? '—'}
+                      </td>
                       <td className="px-3 py-3 whitespace-nowrap"><TaskStatusBadge status={task.status} /></td>
                       <td className="px-3 py-3 whitespace-nowrap"><TaskPriorityBadge priority={task.priority} /></td>
                       <td className="px-3 py-3 text-xs text-slate-600 whitespace-nowrap">{task.assignedTo.split(' ')[0]}</td>

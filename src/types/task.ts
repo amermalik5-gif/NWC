@@ -1,4 +1,10 @@
-export type TaskStatus = 'new' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled'
+export type TaskStatus =
+  | 'new'
+  | 'in_progress'
+  | 'on_hold'
+  | 'blocked'
+  | 'completed'
+  | 'cancelled'
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 
@@ -31,11 +37,14 @@ export interface Task {
   title: string
   description: string
   requestSource: RequestSource
-  serviceType: ServiceType
+  /** One or more service types per task */
+  serviceTypes: ServiceType[]
   requesterName: string
   assignedTo: string
   status: TaskStatus
   priority: TaskPriority
+  /** Required when status === 'blocked'; null otherwise */
+  blocker: string | null
   requestDate: string
   startDate: string | null
   dueDate: string

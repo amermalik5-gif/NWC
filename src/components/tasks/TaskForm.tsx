@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { MultiSelect } from '@/components/ui/multi-select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCreateTask, useUpdateTask } from '@/hooks/useTaskMutations'
 import { useToast } from '@/hooks/useToast'
@@ -30,11 +31,12 @@ const CREATE_DEFAULTS: TaskFormValues = {
   title: '',
   description: '',
   requestSource: 'vp_office',
-  serviceType: 'presentation_design',
+  serviceTypes: ['presentation_design'],
   requesterName: '',
   assignedTo: '',
   status: 'new',
   priority: 'medium',
+  blocker: null,
   requestDate: new Date().toISOString().split('T')[0],
   startDate: null,
   dueDate: '',
@@ -131,20 +133,19 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
               </Select>
             </div>
             <div>
-              <Label>Service Type <span className="text-red-500">*</span></Label>
-              <Select
-                value={watch('serviceType')}
-                onValueChange={(v) => setValue('serviceType', v as TaskFormValues['serviceType'])}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SERVICE_TYPES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Service Type(s) <span className="text-red-500">*</span></Label>
+              <MultiSelect
+                className="mt-1"
+                options={SERVICE_TYPES}
+                value={watch('serviceTypes') ?? []}
+                onChange={(v) => setValue('serviceTypes', v as TaskFormValues['serviceTypes'], { shouldValidate: true })}
+                placeholder="Select service(s)..."
+              />
+              {errors.serviceTypes && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.serviceTypes.message ?? (errors.serviceTypes as any)?.root?.message ?? 'Select at least one service type'}
+                </p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -179,39 +180,58 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Status & Priority</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label>Status</Label>
-            <Select
-              value={watch('status')}
-              onValueChange={(v) => setValue('status', v as TaskFormValues['status'])}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Status</Label>
+              <Select
+                value={watch('status')}
+                onValueChange={(v) => setValue('status', v as TaskFormValues['status'], { shouldValidate: true })}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Priority</Label>
+              <Select
+                value={watch('priority')}
+                onValueChange={(v) => setValue('priority', v as TaskFormValues['priority'])}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_OPTIONS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div>
-            <Label>Priority</Label>
-            <Select
-              value={watch('priority')}
-              onValueChange={(v) => setValue('priority', v as TaskFormValues['priority'])}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PRIORITY_OPTIONS.map((p) => (
-                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+
+          {/* Blocker — shown only when status = blocked */}
+          {watch('status') === 'blocked' && (
+            <div>
+              <Label htmlFor="blocker">
+                Blocker Reason <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="blocker"
+                {...register('blocker')}
+                className="mt-1"
+                placeholder="Describe what is blocking this task..."
+                rows={3}
+              />
+              <FieldError message={errors.blocker?.message} />
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -27,7 +27,7 @@ const ROLES: { value: UserRole; label: string }[] = [
 ]
 
 const EMPTY_FORM = {
-  name: '', username: '', email: '',
+  name: '', username: '', email: '', password: '',
   role: 'team_member' as UserRole,
   status: 'active' as 'active' | 'inactive',
   department: '',
@@ -69,6 +69,7 @@ export function UsersPage() {
       name: user.name,
       username: user.username,
       email: user.email,
+      password: user.password ?? '',
       role: user.role,
       status: user.status,
       department: user.department ?? '',
@@ -82,8 +83,20 @@ export function UsersPage() {
       setFormError('Name, username, and email are required.')
       return
     }
+    if (!editTarget && !form.password.trim()) {
+      setFormError('Password is required for new users.')
+      return
+    }
     if (editTarget) {
-      updateUser(editTarget.id, { ...form })
+      updateUser(editTarget.id, {
+        name: form.name,
+        username: form.username,
+        email: form.email,
+        role: form.role,
+        status: form.status,
+        department: form.department,
+        ...(form.password.trim() ? { password: form.password.trim() } : {}),
+      })
     } else {
       addUser({ ...form })
     }
@@ -242,6 +255,17 @@ export function UsersPage() {
             <div>
               <Label>Email *</Label>
               <Input className="mt-1" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@company.com" />
+            </div>
+            <div>
+              <Label>{editTarget ? 'Password (leave blank to keep current)' : 'Password *'}</Label>
+              <Input
+                className="mt-1"
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                placeholder={editTarget ? 'Enter new password to change...' : 'Set a password'}
+                autoComplete="new-password"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

@@ -19,6 +19,11 @@ export const STATUS_CONFIG: Record<
     badgeClass: 'bg-orange-100 text-orange-700 border-orange-200',
     dotClass: 'bg-orange-500',
   },
+  blocked: {
+    label: 'Blocked',
+    badgeClass: 'bg-rose-100 text-rose-700 border-rose-200',
+    dotClass: 'bg-rose-600',
+  },
   completed: {
     label: 'Completed',
     badgeClass: 'bg-green-100 text-green-700 border-green-200',

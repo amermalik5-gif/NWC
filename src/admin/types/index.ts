@@ -5,6 +5,8 @@ export type UserRole = 'admin' | 'manager' | 'team_member' | 'viewer'
 export interface AdminUser {
   id: string
   username: string
+  /** Plain-text password for mock/demo. Hash in production. */
+  password?: string
   name: string
   email: string
   role: UserRole

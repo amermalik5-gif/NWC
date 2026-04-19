@@ -16,12 +16,13 @@ function tasksToCsv(tasks: Task[]): string {
     'Status',
     'Priority',
     'Request Source',
-    'Service Type',
+    'Service Type(s)',
     'Requester',
     'Assigned To',
     'Request Date',
     'Due Date',
     'Completion Date',
+    'Blocker',
     'Notes',
   ]
 
@@ -31,12 +32,13 @@ function tasksToCsv(tasks: Task[]): string {
     STATUS_CONFIG[t.status].label,
     PRIORITY_CONFIG[t.priority].label,
     SOURCE_LABEL[t.requestSource] ?? t.requestSource,
-    SERVICE_LABEL[t.serviceType] ?? t.serviceType,
+    `"${(t.serviceTypes ?? []).map((s) => SERVICE_LABEL[s] ?? s).join('; ')}"`,
     t.requesterName,
     t.assignedTo,
     formatDate(t.requestDate),
     formatDate(t.dueDate),
     formatDate(t.completionDate),
+    t.blocker ? `"${t.blocker.replace(/"/g, '""')}"` : '',
     `"${t.notes.replace(/"/g, '""')}"`,
   ])
 

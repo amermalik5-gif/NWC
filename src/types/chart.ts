@@ -25,6 +25,7 @@ export interface TaskStats {
   completed: number
   cancelled: number
   onHold: number
+  blocked: number
   overdue: number
   bySource: ChartDataPoint[]
   byServiceType: ChartDataPoint[]

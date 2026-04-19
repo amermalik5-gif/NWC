@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ListChecks,
@@ -6,9 +6,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/store/uiStore'
+import { useUserAuthStore } from '@/store/userAuthStore'
 import { ROUTES } from '@/constants/routes'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -20,7 +22,14 @@ const navItems = [
 
 export function Sidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { sidebarOpen, toggleSidebar } = useUIStore()
+  const { user, logout } = useUserAuthStore()
+
+  function handleLogout() {
+    logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <aside
@@ -79,8 +88,31 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Toggle button */}
-      <div className="border-t border-slate-700 p-2">
+      {/* User info + logout */}
+      <div className="border-t border-slate-700 px-2 py-3 space-y-1">
+        {sidebarOpen && user && (
+          <div className="px-2 py-1 mb-1">
+            <p className="text-xs font-medium text-white truncate">{user.name}</p>
+            <p className="text-xs text-slate-400 capitalize">{user.role.replace('_', ' ')}</p>
+          </div>
+        )}
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleLogout}
+              className={cn(
+                'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors',
+                !sidebarOpen && 'justify-center px-0'
+              )}
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              {sidebarOpen && <span>Sign Out</span>}
+            </button>
+          </TooltipTrigger>
+          {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
+        </Tooltip>
+
+        {/* Toggle button */}
         <button
           onClick={toggleSidebar}
           className="flex w-full items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"

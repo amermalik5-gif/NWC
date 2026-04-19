@@ -177,7 +177,9 @@ export function TaskTable({
                       <span className="text-xs text-slate-500 whitespace-nowrap">{SOURCE_LABEL[task.requestSource]}</span>
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      <span className="text-xs text-slate-500 line-clamp-1 max-w-[140px]">{SERVICE_LABEL[task.serviceType]}</span>
+                      <span className="text-xs text-slate-500 line-clamp-1 max-w-[140px]">
+                        {task.serviceTypes?.map((s) => SERVICE_LABEL[s] ?? s).join(', ')}
+                      </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <TaskStatusBadge status={task.status} />
