@@ -52,11 +52,12 @@ export const useAdminUsersStore = create<AdminUsersStore>()(
     }),
     {
       name: 'nwc-admin-users',
-      version: 2,
+      version: 3,
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as { users: AdminUser[] }
-        // v0→v1 or v1→v2: merge passwords from mockAdminUsers for any user missing one
-        if (version < 2) {
+        // v0-v2: merge passwords + add any new mock users not yet in the store
+        if (version < 3) {
+          // Restore missing passwords from mock data
           state.users = state.users.map((u) => {
             if (!u.password) {
               const mock = mockAdminUsers.find((m) => m.id === u.id)
@@ -64,6 +65,10 @@ export const useAdminUsersStore = create<AdminUsersStore>()(
             }
             return u
           })
+          // Add any new users from mock that don't exist in the store yet
+          const existingIds = new Set(state.users.map((u) => u.id))
+          const newUsers = mockAdminUsers.filter((m) => !existingIds.has(m.id))
+          state.users = [...state.users, ...newUsers]
         }
         return state
       },
