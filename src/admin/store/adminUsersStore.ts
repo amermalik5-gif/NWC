@@ -52,6 +52,21 @@ export const useAdminUsersStore = create<AdminUsersStore>()(
     }),
     {
       name: 'nwc-admin-users',
+      version: 2,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as { users: AdminUser[] }
+        // v0→v1 or v1→v2: merge passwords from mockAdminUsers for any user missing one
+        if (version < 2) {
+          state.users = state.users.map((u) => {
+            if (!u.password) {
+              const mock = mockAdminUsers.find((m) => m.id === u.id)
+              return { ...u, password: mock?.password }
+            }
+            return u
+          })
+        }
+        return state
+      },
     }
   )
 )
