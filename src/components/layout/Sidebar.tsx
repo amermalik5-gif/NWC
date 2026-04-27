@@ -14,6 +14,7 @@ import { useUIStore } from '@/store/uiStore'
 import { useUserAuthStore } from '@/store/userAuthStore'
 import { ROUTES } from '@/constants/routes'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useEffect, useState } from 'react'
 
 const publicNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: ROUTES.DASHBOARD },
@@ -29,9 +30,22 @@ const authNavItems = [
 export function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { sidebarOpen, toggleSidebar } = useUIStore()
+  const { sidebarOpen, setSidebarOpen, toggleSidebar } = useUIStore()
   const { user, isAuthenticated, logout } = useUserAuthStore()
   const navItems = isAuthenticated ? authNavItems : publicNavItems
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  function handleNavClick() {
+    if (isMobile) setSidebarOpen(false)
+  }
+
 
   function handleLogout() {
     logout()
@@ -41,7 +55,10 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-slate-900 text-white transition-all duration-300 flex flex-col',
+        'fixed left-0 top-0 h-screen bg-slate-900 text-white transition-all duration-300 flex flex-col',
+        // On mobile: overlay (z-40), hidden when closed; on desktop: always visible (z-40)
+        isMobile ? 'z-40' : 'z-40',
+        isMobile && !sidebarOpen ? '-translate-x-full' : 'translate-x-0',
         sidebarOpen ? 'w-60' : 'w-16'
       )}
     >
@@ -69,6 +86,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               to={item.href}
+              onClick={handleNavClick}
               className={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 isActive
@@ -137,13 +155,15 @@ export function Sidebar() {
           </Tooltip>
         )}
 
-        {/* Toggle button */}
-        <button
-          onClick={toggleSidebar}
-          className="flex w-full items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-        >
-          {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-        </button>
+        {/* Toggle button — desktop only */}
+        {!isMobile && (
+          <button
+            onClick={toggleSidebar}
+            className="flex w-full items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          >
+            {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          </button>
+        )}
       </div>
     </aside>
   )
