@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/formatters'
 import { isOverdue } from '@/lib/dateHelpers'
 import { taskEditPath } from '@/constants/routes'
 import { useConfigOptions } from '@/hooks/useConfigOptions'
+import { useUserAuthStore } from '@/store/userAuthStore'
 import type { Task } from '@/types/task'
 
 interface TaskDetailPanelProps {
@@ -27,6 +28,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
   const overdue = isOverdue(task)
   const { SOURCE_LABEL, SERVICE_LABEL } = useConfigOptions()
+  const { isAuthenticated } = useUserAuthStore()
 
   return (
     <div className="space-y-6">
@@ -46,12 +48,14 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
             <p className="mt-2 text-sm text-slate-600 leading-relaxed">{task.description}</p>
           )}
         </div>
-        <Button size="sm" variant="outline" asChild className="shrink-0">
-          <Link to={taskEditPath(task.id)}>
-            <Pencil className="h-4 w-4" />
-            Edit
-          </Link>
-        </Button>
+        {isAuthenticated && (
+          <Button size="sm" variant="outline" asChild className="shrink-0">
+            <Link to={taskEditPath(task.id)}>
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+        )}
       </div>
 
       <Separator />

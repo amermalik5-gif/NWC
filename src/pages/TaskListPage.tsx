@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Search, X } from 'lucide-react'
+import { useUserAuthStore } from '@/store/userAuthStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -23,6 +24,7 @@ import { ROUTES } from '@/constants/routes'
 
 export function TaskListPage() {
   const { filters, setFilter, resetFilters, activeFilterCount } = useFilters()
+  const { isAuthenticated } = useUserAuthStore()
   const [page, setPage] = useState(1)
   const [searchValue, setSearchValue] = useState(filters.search)
   const debouncedSearch = useDebounce(searchValue, 300)
@@ -52,15 +54,17 @@ export function TaskListPage() {
         title="All Tasks"
         subtitle={data ? `${data.total} tasks` : undefined}
         actions={
-          <div className="flex items-center gap-2">
-            <ExportButton tasks={allFiltered ?? []} />
-            <Button size="sm" asChild>
-              <Link to={ROUTES.TASK_NEW}>
-                <Plus className="h-4 w-4" />
-                New Task
-              </Link>
-            </Button>
-          </div>
+          isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <ExportButton tasks={allFiltered ?? []} />
+              <Button size="sm" asChild>
+                <Link to={ROUTES.TASK_NEW}>
+                  <Plus className="h-4 w-4" />
+                  New Task
+                </Link>
+              </Button>
+            </div>
+          ) : undefined
         }
       />
       <PageWrapper>

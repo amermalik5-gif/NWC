@@ -9,6 +9,7 @@ import { TaskDetailPage } from '@/pages/TaskDetailPage'
 import { TaskCreatePage } from '@/pages/TaskCreatePage'
 import { TaskEditPage } from '@/pages/TaskEditPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { ProtectedAppRoute } from '@/components/auth/ProtectedAppRoute'
 import { ROUTES } from '@/constants/routes'
 
 // Admin module
@@ -39,9 +40,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: ROUTES.TASKS, element: <TaskListPage /> },
-      { path: ROUTES.TASK_NEW, element: <TaskCreatePage /> },
+      { path: ROUTES.TASK_NEW, element: <ProtectedAppRoute><TaskCreatePage /></ProtectedAppRoute> },
       { path: ROUTES.TASK_DETAIL, element: <TaskDetailPage /> },
-      { path: ROUTES.TASK_EDIT, element: <TaskEditPage /> },
+      { path: ROUTES.TASK_EDIT, element: <ProtectedAppRoute><TaskEditPage /></ProtectedAppRoute> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

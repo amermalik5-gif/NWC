@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/Header'
+import { useUserAuthStore } from '@/store/userAuthStore'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { TasksBySourceChart } from '@/components/dashboard/TasksBySourceChart'
@@ -23,6 +24,7 @@ export function DashboardPage() {
   const { filters } = useFilters()
   const { data: stats, isLoading: statsLoading } = useTaskStats(filters)
   const { data: allTasks, isLoading: tasksLoading } = useAllTasks(filters)
+  const { isAuthenticated } = useUserAuthStore()
 
   // Widget visibility controlled from the Admin → Dashboard Control page
   const { settings } = useAdminSettingsStore()
@@ -35,12 +37,14 @@ export function DashboardPage() {
         title="Dashboard"
         subtitle="Task overview and performance metrics"
         actions={
-          <Button size="sm" asChild>
-            <Link to={ROUTES.TASK_NEW}>
-              <Plus className="h-4 w-4" />
-              New Task
-            </Link>
-          </Button>
+          isAuthenticated ? (
+            <Button size="sm" asChild>
+              <Link to={ROUTES.TASK_NEW}>
+                <Plus className="h-4 w-4" />
+                New Task
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
       <PageWrapper>

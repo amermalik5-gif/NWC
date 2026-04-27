@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ClipboardList,
   LogOut,
+  LogIn,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/store/uiStore'
@@ -14,7 +15,12 @@ import { useUserAuthStore } from '@/store/userAuthStore'
 import { ROUTES } from '@/constants/routes'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
-const navItems = [
+const publicNavItems = [
+  { label: 'Dashboard', icon: LayoutDashboard, href: ROUTES.DASHBOARD },
+  { label: 'All Tasks', icon: ListChecks, href: ROUTES.TASKS },
+]
+
+const authNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: ROUTES.DASHBOARD },
   { label: 'All Tasks', icon: ListChecks, href: ROUTES.TASKS },
   { label: 'New Task', icon: PlusCircle, href: ROUTES.TASK_NEW },
@@ -24,7 +30,8 @@ export function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { sidebarOpen, toggleSidebar } = useUIStore()
-  const { user, logout } = useUserAuthStore()
+  const { user, isAuthenticated, logout } = useUserAuthStore()
+  const navItems = isAuthenticated ? authNavItems : publicNavItems
 
   function handleLogout() {
     logout()
@@ -88,7 +95,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User info + logout */}
+      {/* User info + auth button */}
       <div className="border-t border-slate-700 px-2 py-3 space-y-1">
         {sidebarOpen && user && (
           <div className="px-2 py-1 mb-1">
@@ -96,21 +103,39 @@ export function Sidebar() {
             <p className="text-xs text-slate-400 capitalize">{user.role.replace('_', ' ')}</p>
           </div>
         )}
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={handleLogout}
-              className={cn(
-                'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors',
-                !sidebarOpen && 'justify-center px-0'
-              )}
-            >
-              <LogOut className="h-4 w-4 shrink-0" />
-              {sidebarOpen && <span>Sign Out</span>}
-            </button>
-          </TooltipTrigger>
-          {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
-        </Tooltip>
+        {isAuthenticated ? (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleLogout}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors',
+                  !sidebarOpen && 'justify-center px-0'
+                )}
+              >
+                <LogOut className="h-4 w-4 shrink-0" />
+                {sidebarOpen && <span>Sign Out</span>}
+              </button>
+            </TooltipTrigger>
+            {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
+          </Tooltip>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Link
+                to="/login"
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors',
+                  !sidebarOpen && 'justify-center px-0'
+                )}
+              >
+                <LogIn className="h-4 w-4 shrink-0" />
+                {sidebarOpen && <span>Sign In</span>}
+              </Link>
+            </TooltipTrigger>
+            {!sidebarOpen && <TooltipContent side="right">Sign In</TooltipContent>}
+          </Tooltip>
+        )}
 
         {/* Toggle button */}
         <button

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { useUserAuthStore } from '@/store/userAuthStore'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -69,6 +70,7 @@ export function TaskTable({
   const [sortKey, setSortKey] = useState<SortKey>('requestDate')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const { SOURCE_LABEL, SERVICE_LABEL } = useConfigOptions()
+  const { isAuthenticated } = useUserAuthStore()
 
   const handleSort = (key: SortKey) => {
     if (key === sortKey) {
@@ -144,7 +146,7 @@ export function TaskTable({
                   <th className="px-4 py-3 text-left">
                     <SortButton column="dueDate" currentKey={sortKey} dir={sortDir} onClick={handleSort}>Due</SortButton>
                   </th>
-                  <th className="px-4 py-3 w-10" />
+                  {isAuthenticated && <th className="px-4 py-3 w-10" />}
                 </tr>
               </thead>
               <tbody>
@@ -201,9 +203,11 @@ export function TaskTable({
                         {formatDate(task.dueDate)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <TaskActionMenu task={task} />
-                    </td>
+                    {isAuthenticated && (
+                      <td className="px-4 py-3">
+                        <TaskActionMenu task={task} />
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
