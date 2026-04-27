@@ -1,7 +1,9 @@
 import express from 'express'
+import pg from 'pg'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
+const { Pool } = pg
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -9,23 +11,28 @@ const PORT = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.static(join(__dirname, 'dist')))
 
-// ─── Initial data ─────────────────────────────────────────────────────────────
+// ─── Database connection ───────────────────────────────────────────────────────
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+})
 
+// ─── Initial seed data ─────────────────────────────────────────────────────────
 const INITIAL_USERS = [
-  { id: 'USR-001', username: 'amerrawahneh', password: 'Rawahneh97', name: 'Amer Rawahneh', email: 'amer.rawahneh@company.com', role: 'admin', status: 'active', department: 'IT', createdAt: '2025-01-01T08:00:00Z', lastLogin: '2026-04-14T09:30:00Z' },
-  { id: 'USR-002', username: 'sara.mohammed', password: 'Sara@2025', name: 'Sara Mohammed', email: 'sara.mohammed@company.com', role: 'manager', status: 'active', department: 'Creative', createdAt: '2025-01-05T08:00:00Z', lastLogin: '2026-04-13T14:20:00Z' },
-  { id: 'USR-003', username: 'ahmed.alrashid', password: 'Ahmed@2025', name: 'Ahmed Al-Rashid', email: 'ahmed.alrashid@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2025-01-10T08:00:00Z', lastLogin: '2026-04-12T11:00:00Z' },
-  { id: 'USR-004', username: 'khalid.ibrahim', password: 'Khalid@2025', name: 'Khalid Ibrahim', email: 'khalid.ibrahim@company.com', role: 'team_member', status: 'active', department: 'Design', createdAt: '2025-01-15T08:00:00Z', lastLogin: '2026-04-11T09:00:00Z' },
-  { id: 'USR-005', username: 'nour.hassan', password: 'Nour@2025', name: 'Nour Hassan', email: 'nour.hassan@company.com', role: 'team_member', status: 'active', department: 'Translation', createdAt: '2025-02-01T08:00:00Z', lastLogin: '2026-04-10T16:00:00Z' },
-  { id: 'USR-006', username: 'omar.abdullah', password: 'Omar@2025', name: 'Omar Abdullah', email: 'omar.abdullah@company.com', role: 'team_member', status: 'active', department: 'Content', createdAt: '2025-02-10T08:00:00Z', lastLogin: '2026-04-09T10:30:00Z' },
-  { id: 'USR-007', username: 'lina.farid', password: 'Lina@2025', name: 'Lina Farid', email: 'lina.farid@company.com', role: 'team_member', status: 'active', department: 'Design', createdAt: '2025-02-15T08:00:00Z', lastLogin: '2026-04-08T13:00:00Z' },
-  { id: 'USR-008', username: 'maya.yousef', password: 'Maya@2025', name: 'Maya Yousef', email: 'maya.yousef@company.com', role: 'team_member', status: 'active', department: 'Events', createdAt: '2025-03-01T08:00:00Z', lastLogin: '2026-04-07T15:45:00Z' },
-  { id: 'USR-009', username: 'faisal.alamin', password: 'Faisal@2025', name: 'Faisal Al-Amin', email: 'faisal.alamin@company.com', role: 'viewer', status: 'active', department: 'Strategy', createdAt: '2025-03-10T08:00:00Z', lastLogin: '2026-04-05T11:00:00Z' },
-  { id: 'USR-010', username: 'rania.kareem', password: 'Rania@2025', name: 'Rania Kareem', email: 'rania.kareem@company.com', role: 'team_member', status: 'inactive', department: 'Content', createdAt: '2025-03-20T08:00:00Z', lastLogin: '2026-03-15T09:00:00Z' },
-  { id: 'USR-011', username: 'mansour', password: 'Mansour@2025', name: 'Mansour', email: 'mansour@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
-  { id: 'USR-012', username: 'areej', password: 'Areej@2025', name: 'Areej', email: 'areej@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
-  { id: 'USR-013', username: 'najah', password: 'Najah@2025', name: 'Najah', email: 'najah@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
-  { id: 'USR-014', username: 'team', password: 'Team@2025', name: 'Team', email: 'team@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
+  { id: 'USR-001', username: 'amerrawahneh', password: 'Rawahneh97', name: 'Amer Rawahneh', email: 'amer.rawahneh@company.com', role: 'admin', status: 'active', department: 'IT' },
+  { id: 'USR-002', username: 'sara.mohammed', password: 'Sara@2025', name: 'Sara Mohammed', email: 'sara.mohammed@company.com', role: 'manager', status: 'active', department: 'Creative' },
+  { id: 'USR-003', username: 'ahmed.alrashid', password: 'Ahmed@2025', name: 'Ahmed Al-Rashid', email: 'ahmed.alrashid@company.com', role: 'team_member', status: 'active', department: 'Creative' },
+  { id: 'USR-004', username: 'khalid.ibrahim', password: 'Khalid@2025', name: 'Khalid Ibrahim', email: 'khalid.ibrahim@company.com', role: 'team_member', status: 'active', department: 'Design' },
+  { id: 'USR-005', username: 'nour.hassan', password: 'Nour@2025', name: 'Nour Hassan', email: 'nour.hassan@company.com', role: 'team_member', status: 'active', department: 'Translation' },
+  { id: 'USR-006', username: 'omar.abdullah', password: 'Omar@2025', name: 'Omar Abdullah', email: 'omar.abdullah@company.com', role: 'team_member', status: 'active', department: 'Content' },
+  { id: 'USR-007', username: 'lina.farid', password: 'Lina@2025', name: 'Lina Farid', email: 'lina.farid@company.com', role: 'team_member', status: 'active', department: 'Design' },
+  { id: 'USR-008', username: 'maya.yousef', password: 'Maya@2025', name: 'Maya Yousef', email: 'maya.yousef@company.com', role: 'team_member', status: 'active', department: 'Events' },
+  { id: 'USR-009', username: 'faisal.alamin', password: 'Faisal@2025', name: 'Faisal Al-Amin', email: 'faisal.alamin@company.com', role: 'viewer', status: 'active', department: 'Strategy' },
+  { id: 'USR-010', username: 'rania.kareem', password: 'Rania@2025', name: 'Rania Kareem', email: 'rania.kareem@company.com', role: 'team_member', status: 'inactive', department: 'Content' },
+  { id: 'USR-011', username: 'mansour', password: 'Mansour@2025', name: 'Mansour', email: 'mansour@company.com', role: 'team_member', status: 'active', department: 'Creative' },
+  { id: 'USR-012', username: 'areej', password: 'Areej@2025', name: 'Areej', email: 'areej@company.com', role: 'team_member', status: 'active', department: 'Creative' },
+  { id: 'USR-013', username: 'najah', password: 'Najah@2025', name: 'Najah', email: 'najah@company.com', role: 'team_member', status: 'active', department: 'Creative' },
+  { id: 'USR-014', username: 'team', password: 'Team@2025', name: 'Team', email: 'team@company.com', role: 'team_member', status: 'active', department: 'Creative' },
 ]
 
 const INITIAL_CONFIG = {
@@ -61,115 +68,213 @@ const INITIAL_CONFIG = {
   ],
 }
 
-// ─── In-memory database (shared by all connected clients) ─────────────────────
-const db = {
-  tasks: [],
-  users: INITIAL_USERS.map(u => ({ ...u })),
-  config: JSON.parse(JSON.stringify(INITIAL_CONFIG)),
+// ─── Create tables and seed if empty ──────────────────────────────────────────
+async function initDB() {
+  const client = await pool.connect()
+  try {
+    // Create tables
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id TEXT PRIMARY KEY,
+        data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        data JSONB NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        data JSONB NOT NULL
+      );
+    `)
+
+    // Seed users if empty
+    const { rowCount: userCount } = await client.query('SELECT 1 FROM users LIMIT 1')
+    if (userCount === 0) {
+      for (const user of INITIAL_USERS) {
+        const now = new Date().toISOString()
+        await client.query(
+          'INSERT INTO users (id, data) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
+          [user.id, { ...user, createdAt: now, lastLogin: null }]
+        )
+      }
+      console.log('✅ Users seeded')
+    }
+
+    // Seed config if empty
+    const { rowCount: configCount } = await client.query("SELECT 1 FROM config WHERE key='main' LIMIT 1")
+    if (configCount === 0) {
+      await client.query(
+        "INSERT INTO config (key, data) VALUES ('main', $1) ON CONFLICT (key) DO NOTHING",
+        [INITIAL_CONFIG]
+      )
+      console.log('✅ Config seeded')
+    }
+
+    console.log('✅ Database ready')
+  } finally {
+    client.release()
+  }
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
-function generateTaskId() {
-  const max = db.tasks.reduce((acc, t) => {
-    const n = parseInt(t.id.replace('TASK-', ''), 10)
+async function generateTaskId() {
+  const { rows } = await pool.query("SELECT id FROM tasks ORDER BY id DESC")
+  const max = rows.reduce((acc, r) => {
+    const n = parseInt(r.id.replace('TASK-', ''), 10)
     return isNaN(n) ? acc : Math.max(acc, n)
   }, 0)
   return `TASK-${String(max + 1).padStart(3, '0')}`
 }
 
-function generateUserId() {
-  const max = db.users.reduce((acc, u) => {
-    const n = parseInt(u.id.replace('USR-', ''), 10)
+async function generateUserId() {
+  const { rows } = await pool.query("SELECT id FROM users ORDER BY id DESC")
+  const max = rows.reduce((acc, r) => {
+    const n = parseInt(r.id.replace('USR-', ''), 10)
     return isNaN(n) ? acc : Math.max(acc, n)
   }, 0)
   return `USR-${String(max + 1).padStart(3, '0')}`
 }
 
 // ─── Auth API ─────────────────────────────────────────────────────────────────
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body ?? {}
-  const user = db.users.find(u =>
-    u.username.toLowerCase() === (username ?? '').toLowerCase() &&
-    u.password === password &&
-    u.status === 'active'
-  )
-  if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
-  res.json({
-    token: `mock-jwt-${Date.now()}`,
-    user: { id: user.id, username: user.username, name: user.name, role: user.role },
-  })
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body ?? {}
+    const { rows } = await pool.query('SELECT data FROM users')
+    const user = rows.map(r => r.data).find(u =>
+      u.username.toLowerCase() === (username ?? '').toLowerCase() &&
+      u.password === password &&
+      u.status === 'active'
+    )
+    if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
+    // Update lastLogin
+    await pool.query(
+      'UPDATE users SET data = data || $1 WHERE id = $2',
+      [JSON.stringify({ lastLogin: new Date().toISOString() }), user.id]
+    )
+    res.json({
+      token: `mock-jwt-${Date.now()}`,
+      user: { id: user.id, username: user.username, name: user.name, role: user.role },
+    })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-app.post('/api/auth/admin-login', (req, res) => {
-  const { username, password } = req.body ?? {}
-  const user = db.users.find(u =>
-    u.username.toLowerCase() === (username ?? '').toLowerCase() &&
-    u.password === password &&
-    u.status === 'active' &&
-    (u.role === 'admin' || u.role === 'manager')
-  )
-  if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
-  res.json({
-    token: `mock-admin-jwt-${Date.now()}`,
-    user: { id: user.id, username: user.username, name: user.name, role: user.role },
-  })
+app.post('/api/auth/admin-login', async (req, res) => {
+  try {
+    const { username, password } = req.body ?? {}
+    const { rows } = await pool.query('SELECT data FROM users')
+    const user = rows.map(r => r.data).find(u =>
+      u.username.toLowerCase() === (username ?? '').toLowerCase() &&
+      u.password === password &&
+      u.status === 'active' &&
+      (u.role === 'admin' || u.role === 'manager')
+    )
+    if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
+    res.json({
+      token: `mock-admin-jwt-${Date.now()}`,
+      user: { id: user.id, username: user.username, name: user.name, role: user.role },
+    })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 // ─── Tasks API ────────────────────────────────────────────────────────────────
-app.get('/api/tasks', (_req, res) => res.json(db.tasks))
-
-app.get('/api/tasks/:id', (req, res) => {
-  const task = db.tasks.find(t => t.id === req.params.id)
-  if (!task) return res.status(404).json({ error: 'Task not found' })
-  res.json(task)
+app.get('/api/tasks', async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data FROM tasks ORDER BY created_at DESC')
+    res.json(rows.map(r => r.data))
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-app.post('/api/tasks', (req, res) => {
-  const now = new Date().toISOString()
-  const task = { ...req.body, id: generateTaskId(), createdAt: now, updatedAt: now }
-  db.tasks = [task, ...db.tasks]
-  res.status(201).json(task)
+app.get('/api/tasks/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data FROM tasks WHERE id = $1', [req.params.id])
+    if (rows.length === 0) return res.status(404).json({ error: 'Task not found' })
+    res.json(rows[0].data)
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-app.put('/api/tasks/:id', (req, res) => {
-  const idx = db.tasks.findIndex(t => t.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ error: 'Task not found' })
-  db.tasks[idx] = { ...db.tasks[idx], ...req.body, updatedAt: new Date().toISOString() }
-  res.json(db.tasks[idx])
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const now = new Date().toISOString()
+    const id = await generateTaskId()
+    const task = { ...req.body, id, createdAt: now, updatedAt: now }
+    await pool.query('INSERT INTO tasks (id, data) VALUES ($1, $2)', [id, task])
+    res.status(201).json(task)
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-app.delete('/api/tasks/:id', (req, res) => {
-  db.tasks = db.tasks.filter(t => t.id !== req.params.id)
-  res.json({ ok: true })
+app.put('/api/tasks/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data FROM tasks WHERE id = $1', [req.params.id])
+    if (rows.length === 0) return res.status(404).json({ error: 'Task not found' })
+    const updated = { ...rows[0].data, ...req.body, updatedAt: new Date().toISOString() }
+    await pool.query('UPDATE tasks SET data = $1 WHERE id = $2', [updated, req.params.id])
+    res.json(updated)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.delete('/api/tasks/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM tasks WHERE id = $1', [req.params.id])
+    res.json({ ok: true })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 // ─── Users API ────────────────────────────────────────────────────────────────
-app.get('/api/users', (_req, res) => res.json(db.users))
-
-app.post('/api/users', (req, res) => {
-  const user = { ...req.body, id: generateUserId(), createdAt: new Date().toISOString(), lastLogin: null }
-  db.users = [...db.users, user]
-  res.status(201).json(user)
+app.get('/api/users', async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data FROM users ORDER BY (data->>\'id\')')
+    res.json(rows.map(r => r.data))
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-app.put('/api/users/:id', (req, res) => {
-  const idx = db.users.findIndex(u => u.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ error: 'User not found' })
-  db.users[idx] = { ...db.users[idx], ...req.body }
-  res.json(db.users[idx])
+app.post('/api/users', async (req, res) => {
+  try {
+    const id = await generateUserId()
+    const user = { ...req.body, id, createdAt: new Date().toISOString(), lastLogin: null }
+    await pool.query('INSERT INTO users (id, data) VALUES ($1, $2)', [id, user])
+    res.status(201).json(user)
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-app.delete('/api/users/:id', (req, res) => {
-  db.users = db.users.filter(u => u.id !== req.params.id)
-  res.json({ ok: true })
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data FROM users WHERE id = $1', [req.params.id])
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found' })
+    const updated = { ...rows[0].data, ...req.body }
+    await pool.query('UPDATE users SET data = $1 WHERE id = $2', [updated, req.params.id])
+    res.json(updated)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id])
+    res.json({ ok: true })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 // ─── Config API ───────────────────────────────────────────────────────────────
-app.get('/api/config', (_req, res) => res.json(db.config))
+app.get('/api/config', async (_req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT data FROM config WHERE key = 'main'")
+    res.json(rows[0]?.data ?? INITIAL_CONFIG)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
 
-app.put('/api/config', (req, res) => {
-  db.config = { ...db.config, ...req.body }
-  res.json(db.config)
+app.put('/api/config', async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT data FROM config WHERE key = 'main'")
+    const updated = { ...(rows[0]?.data ?? INITIAL_CONFIG), ...req.body }
+    await pool.query(
+      "INSERT INTO config (key, data) VALUES ('main', $1) ON CONFLICT (key) DO UPDATE SET data = $1",
+      [updated]
+    )
+    res.json(updated)
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 // ─── SPA fallback ─────────────────────────────────────────────────────────────
@@ -177,4 +282,7 @@ app.use((_req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))
 })
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+// ─── Start ────────────────────────────────────────────────────────────────────
+initDB()
+  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
+  .catch(err => { console.error('DB init failed:', err); process.exit(1) })
