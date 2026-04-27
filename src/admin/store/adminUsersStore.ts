@@ -1,77 +1,76 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { AdminUser } from '@/admin/types'
 import { mockAdminUsers } from '@/admin/data/mockUsers'
 
+const API = '/api'
+
 interface AdminUsersStore {
   users: AdminUser[]
-  addUser: (user: Omit<AdminUser, 'id' | 'createdAt' | 'lastLogin'>) => AdminUser
-  updateUser: (id: string, updates: Partial<AdminUser>) => void
-  deleteUser: (id: string) => void
-  toggleStatus: (id: string) => void
+  loaded: boolean
+  init: () => Promise<void>
+  addUser: (user: Omit<AdminUser, 'id' | 'createdAt' | 'lastLogin'>) => Promise<AdminUser>
+  updateUser: (id: string, updates: Partial<AdminUser>) => Promise<void>
+  deleteUser: (id: string) => Promise<void>
+  toggleStatus: (id: string) => Promise<void>
 }
 
-export const useAdminUsersStore = create<AdminUsersStore>()(
-  persist(
-    (set, get) => ({
-      users: [...mockAdminUsers],
+export const useAdminUsersStore = create<AdminUsersStore>()((set, get) => ({
+  // Start with mock data so dropdowns render immediately on first load
+  users: [...mockAdminUsers],
+  loaded: false,
 
-      addUser: (data) => {
-        // Derive next ID from the highest existing USR number
-        const maxId = get().users.reduce((acc, u) => {
-          const n = parseInt(u.id.replace('USR-', ''), 10)
-          return isNaN(n) ? acc : Math.max(acc, n)
-        }, 0)
-        const newUser: AdminUser = {
-          ...data,
-          id: `USR-${String(maxId + 1).padStart(3, '0')}`,
-          createdAt: new Date().toISOString(),
-          lastLogin: null,
-        }
-        set((s) => ({ users: [...s.users, newUser] }))
-        return newUser
-      },
-
-      updateUser: (id, updates) => {
-        set((s) => ({
-          users: s.users.map((u) => (u.id === id ? { ...u, ...updates } : u)),
-        }))
-      },
-
-      deleteUser: (id) => {
-        set((s) => ({ users: s.users.filter((u) => u.id !== id) }))
-      },
-
-      toggleStatus: (id) => {
-        set((s) => ({
-          users: s.users.map((u) =>
-            u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u
-          ),
-        }))
-      },
-    }),
-    {
-      name: 'nwc-admin-users',
-      version: 3,
-      migrate: (persistedState: unknown, version: number) => {
-        const state = persistedState as { users: AdminUser[] }
-        // v0-v2: merge passwords + add any new mock users not yet in the store
-        if (version < 3) {
-          // Restore missing passwords from mock data
-          state.users = state.users.map((u) => {
-            if (!u.password) {
-              const mock = mockAdminUsers.find((m) => m.id === u.id)
-              return { ...u, password: mock?.password }
-            }
-            return u
-          })
-          // Add any new users from mock that don't exist in the store yet
-          const existingIds = new Set(state.users.map((u) => u.id))
-          const newUsers = mockAdminUsers.filter((m) => !existingIds.has(m.id))
-          state.users = [...state.users, ...newUsers]
-        }
-        return state
-      },
+  init: async () => {
+    if (get().loaded) return
+    try {
+      const res = await fetch(`${API}/users`)
+      if (!res.ok) return
+      const users: AdminUser[] = await res.json()
+      set({ users, loaded: true })
+    } catch {
+      set({ loaded: true })
     }
-  )
-)
+  },
+
+  addUser: async (data) => {
+    const res = await fetch(`${API}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    const newUser: AdminUser = await res.json()
+    set((s) => ({ users: [...s.users, newUser] }))
+    return newUser
+  },
+
+  updateUser: async (id, updates) => {
+    await fetch(`${API}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+    set((s) => ({
+      users: s.users.map((u) => (u.id === id ? { ...u, ...updates } : u)),
+    }))
+  },
+
+  deleteUser: async (id) => {
+    await fetch(`${API}/users/${id}`, { method: 'DELETE' })
+    set((s) => ({ users: s.users.filter((u) => u.id !== id) }))
+  },
+
+  toggleStatus: async (id) => {
+    const user = get().users.find((u) => u.id === id)
+    if (!user) return
+    const newStatus = user.status === 'active' ? 'inactive' : 'active'
+    await fetch(`${API}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+    set((s) => ({
+      users: s.users.map((u) =>
+        u.id === id ? { ...u, status: newStatus } : u
+      ),
+    }))
+  },
+}))

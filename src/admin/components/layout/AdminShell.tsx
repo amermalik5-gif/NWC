@@ -1,8 +1,18 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { AdminSidebar } from './AdminSidebar'
+import { useAdminUsersStore } from '@/admin/store/adminUsersStore'
+import { useAdminConfigStore } from '@/admin/store/adminConfigStore'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 export function AdminShell() {
+  const initUsers = useAdminUsersStore((s) => s.init)
+  const initConfig = useAdminConfigStore((s) => s.init)
+
+  useEffect(() => {
+    initUsers()
+    initConfig()
+  }, [initUsers, initConfig])
   return (
     <TooltipProvider>
       <div className="flex h-screen bg-slate-50">

@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { UserRole } from '@/admin/types'
-import { useAdminUsersStore } from '@/admin/store/adminUsersStore'
 
 interface AppUser {
   id: string
@@ -33,49 +32,24 @@ export const useUserAuthStore = create<UserAuthStore>()(
 
       login: async (username, password) => {
         set({ isLoading: true, error: null })
-
-        // Simulate network latency
-        await new Promise((r) => setTimeout(r, 500))
-
-        // Validate against the adminUsersStore (single source of truth for users)
-        const { users } = useAdminUsersStore.getState()
-        const match = users.find(
-          (u) =>
-            u.username.toLowerCase() === username.trim().toLowerCase() &&
-            u.password === password &&
-            u.status === 'active'
-        )
-
-        if (match) {
-          set({
-            isAuthenticated: true,
-            user: {
-              id: match.id,
-              username: match.username,
-              name: match.name,
-              role: match.role,
-            },
-            token: `mock-app-jwt-${Date.now()}`,
-            isLoading: false,
-            error: null,
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username.trim(), password }),
           })
+          if (!res.ok) throw new Error('Invalid credentials')
+          const { token, user } = await res.json()
+          set({ isAuthenticated: true, user, token, isLoading: false, error: null })
           return true
+        } catch {
+          set({ isLoading: false, error: 'Invalid username or password. Please try again.' })
+          return false
         }
-
-        set({
-          isLoading: false,
-          error: 'Invalid username or password. Please try again.',
-        })
-        return false
       },
 
       logout: () => {
-        set({
-          isAuthenticated: false,
-          user: null,
-          token: null,
-          error: null,
-        })
+        set({ isAuthenticated: false, user: null, token: null, error: null })
       },
 
       clearError: () => set({ error: null }),

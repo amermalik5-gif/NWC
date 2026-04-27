@@ -78,7 +78,7 @@ export function UsersPage() {
     setDialogOpen(true)
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!form.name.trim() || !form.username.trim() || !form.email.trim()) {
       setFormError('Name, username, and email are required.')
       return
@@ -88,7 +88,7 @@ export function UsersPage() {
       return
     }
     if (editTarget) {
-      updateUser(editTarget.id, {
+      await updateUser(editTarget.id, {
         name: form.name,
         username: form.username,
         email: form.email,
@@ -98,7 +98,7 @@ export function UsersPage() {
         ...(form.password.trim() ? { password: form.password.trim() } : {}),
       })
     } else {
-      addUser({ ...form })
+      await addUser({ ...form })
     }
     setDialogOpen(false)
   }
@@ -196,7 +196,7 @@ export function UsersPage() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => toggleStatus(user.id)}
+                            onClick={() => { void toggleStatus(user.id) }}
                             title={user.status === 'active' ? 'Deactivate' : 'Activate'}
                           >
                             {user.status === 'active'
@@ -310,8 +310,8 @@ export function UsersPage() {
         title="Delete user?"
         description={`This will permanently remove "${deleteTarget?.name}" from the system.`}
         confirmLabel="Delete"
-        onConfirm={() => {
-          if (deleteTarget) deleteUser(deleteTarget.id)
+        onConfirm={async () => {
+          if (deleteTarget) await deleteUser(deleteTarget.id)
           setDeleteTarget(null)
         }}
       />
