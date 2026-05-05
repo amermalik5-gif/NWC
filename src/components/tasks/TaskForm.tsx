@@ -102,7 +102,8 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
 
     if (mode === 'create') {
       createTask.mutate(
-        { ...payload, attachments: [] },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { ...payload, attachments: [] } as any,
         {
           onSuccess: (task: Task) => {
             toast({ title: 'Task created', description: `${task.id} has been created.` })
@@ -115,7 +116,8 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
       )
     } else if (taskId) {
       updateTask.mutate(
-        { id: taskId, input: payload },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { id: taskId, input: payload as any },
         {
           onSuccess: (task: Task) => {
             toast({ title: 'Task updated', description: `${task.id} has been saved.` })
@@ -176,7 +178,7 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label>Request Source <span className="text-red-500">*</span></Label>
-              <Select value={watch('requestSource')} onValueChange={(v) => setValue('requestSource', v as TaskFormValues['requestSource'])}>
+              <Select value={watch('requestSource')} onValueChange={(v) => setValue('requestSource', v)}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {REQUEST_SOURCES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}

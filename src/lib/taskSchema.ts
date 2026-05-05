@@ -1,13 +1,5 @@
 import { z } from 'zod'
 
-const SERVICE_TYPE_VALUES = [
-  'presentation_design',
-  'presentation_translation',
-  'graphic_design',
-  'content_writing',
-  'event_management',
-] as const
-
 const checklistItemSchema = z.object({
   id: z.string(),
   text: z.string(),
@@ -23,17 +15,9 @@ const recurringSchema = z.object({
 export const taskSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   description: z.string().default(''),
-  requestSource: z.enum([
-    'vp_office',
-    'infrastructure',
-    'it_operations',
-    'digital_transformation',
-    'strategy',
-    'applications',
-    'others',
-  ]),
+  requestSource: z.string().min(1, 'Request source is required'),
   serviceTypes: z
-    .array(z.enum(SERVICE_TYPE_VALUES))
+    .array(z.string().min(1))
     .min(1, 'Select at least one service type'),
   requesterName: z.string().min(1, 'Requester name is required'),
   assignedTo: z.string().min(1, 'Please assign to a team member'),
