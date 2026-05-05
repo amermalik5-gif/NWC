@@ -39,15 +39,18 @@ export function SummaryCard({
   }
 
   return (
-    <Card className={cn(highlight && 'border-red-200 bg-red-50')}>
+    <Card className={cn(
+      'border-nwc-muted shadow-sm hover:shadow-md transition-shadow',
+      highlight && 'border-red-200 bg-red-50'
+    )}>
       <CardContent className="p-5">
         <div className="flex items-center gap-4">
-          <div className={cn('flex h-12 w-12 items-center justify-center rounded-lg', iconBg)}>
+          <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl', iconBg)}>
             <Icon className={cn('h-6 w-6', iconColor)} />
           </div>
           <div>
             <p className="text-sm text-slate-500">{label}</p>
-            <p className={cn('text-2xl font-bold', highlight ? 'text-red-600' : 'text-slate-900')}>
+            <p className={cn('text-2xl font-bold', highlight ? 'text-red-600' : 'text-nwc-navy')}>
               {value}
             </p>
           </div>

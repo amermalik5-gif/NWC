@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useUserAuthStore } from '@/store/userAuthStore'
+import NwcLogo from '@/assets/nwc-logo-white.svg'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -33,29 +34,29 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen nwc-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Logo above card */}
+        <div className="flex flex-col items-center mb-8">
+          <img
+            src={NwcLogo}
+            alt="NWC"
+            className="h-20 w-20 rounded-full bg-white/10 p-1 mb-4"
+          />
+          <h1 className="text-2xl font-bold text-white tracking-wide">NWC Task Tracker</h1>
+          <p className="text-sm text-blue-200 mt-1">National Water Company</p>
+        </div>
+
         {/* Card */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+        <div className="rounded-2xl border border-white/20 bg-white shadow-2xl overflow-hidden">
           {/* Header strip */}
-          <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-8 py-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-                <LayoutDashboard className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">NWC Task Tracker</h1>
-                <p className="text-sm text-blue-200">Sign in to your account</p>
-              </div>
-            </div>
+          <div className="border-b border-nwc-muted bg-nwc-light px-8 py-5">
+            <h2 className="text-base font-semibold text-nwc-navy">Sign in to your account</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Enter your credentials to continue</p>
           </div>
 
           {/* Form */}
           <div className="px-8 py-8">
-            <p className="mb-6 text-sm text-slate-500">
-              Enter your credentials to access the task management system.
-            </p>
-
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Error */}
               {error && (
@@ -111,7 +112,7 @@ export function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-11"
+                className="w-full nwc-gradient hover:opacity-90 text-white font-semibold h-11 transition-opacity"
                 disabled={isLoading || !username || !password}
               >
                 {isLoading ? (

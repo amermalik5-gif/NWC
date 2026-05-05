@@ -4,25 +4,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    /* NWC Brand */
+    --nwc-blue: #0070cd;
+    --nwc-dark: #2773AC;
+    --nwc-navy: #11448c;
+    --nwc-teal: #2CBC9D;
+    --nwc-light: #F0F7FF;
+
+    --background: 210 50% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Primary = NWC Blue #0070cd */
+    --primary: 210 100% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 50% 95%;
+    --secondary-foreground: 210 60% 25%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 20% 50%;
+    --accent: 210 50% 95%;
+    --accent-foreground: 210 60% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 210 25% 88%;
+    --input: 210 25% 88%;
+    --ring: 210 100% 40%;
     --radius: 0.5rem;
   }
 
@@ -40,5 +48,14 @@
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  /* NWC gradient utility */
+  .nwc-gradient {
+    background: linear-gradient(160deg, #11448c 0%, #2773AC 50%, #1f8cce 100%);
+  }
+
+  .nwc-gradient-subtle {
+    background: linear-gradient(135deg, #F0F7FF 0%, #e8f3fc 100%);
   }
 }

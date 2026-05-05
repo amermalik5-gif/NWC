@@ -20,6 +20,14 @@ const config: Config = {
     },
     extend: {
       colors: {
+        nwc: {
+          blue:  '#0070cd',
+          dark:  '#2773AC',
+          navy:  '#11448c',
+          teal:  '#2CBC9D',
+          light: '#F0F7FF',
+          muted: '#d4e6f3',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

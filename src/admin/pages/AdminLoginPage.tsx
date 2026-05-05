@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { ShieldCheck, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/admin/auth/useAuth'
+import NwcLogo from '@/assets/nwc-logo-white.svg'
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
@@ -34,39 +35,41 @@ export function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center p-4">
+    <div className="min-h-screen nwc-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Logo above card */}
+        <div className="flex flex-col items-center mb-8">
+          <img
+            src={NwcLogo}
+            alt="NWC"
+            className="h-20 w-20 rounded-full bg-white/10 p-1 mb-4"
+          />
+          <h1 className="text-2xl font-bold text-white tracking-wide">Admin Panel</h1>
+          <p className="text-sm text-blue-200 mt-1 flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4" /> Authorised Personnel Only
+          </p>
+        </div>
+
         {/* Card */}
-        <div className="rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
+        <div className="rounded-2xl border border-white/20 bg-white shadow-2xl overflow-hidden">
           {/* Header strip */}
-          <div className="bg-gradient-to-r from-red-700 to-red-600 px-8 py-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-                <Shield className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Admin Access</h1>
-                <p className="text-sm text-red-200">NWC Task Tracker</p>
-              </div>
-            </div>
+          <div className="border-b border-nwc-muted bg-nwc-light px-8 py-5">
+            <h2 className="text-base font-semibold text-nwc-navy">Administrator Sign In</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Enter your admin credentials to continue</p>
           </div>
 
           {/* Form */}
           <div className="px-8 py-8">
-            <p className="mb-6 text-sm text-slate-400">
-              Enter your administrator credentials to continue.
-            </p>
-
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Error message */}
               {error && (
-                <div className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm text-red-400">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                   {error}
                 </div>
               )}
 
               <div>
-                <Label htmlFor="username" className="text-slate-300 text-sm">
+                <Label htmlFor="username" className="text-slate-700 text-sm">
                   Username
                 </Label>
                 <Input
@@ -79,12 +82,12 @@ export function AdminLoginPage() {
                   autoFocus
                   required
                   disabled={isLoading}
-                  className="mt-1.5 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-red-500"
+                  className="mt-1.5"
                 />
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-slate-300 text-sm">
+                <Label htmlFor="password" className="text-slate-700 text-sm">
                   Password
                 </Label>
                 <div className="relative mt-1.5">
@@ -97,12 +100,12 @@ export function AdminLoginPage() {
                     autoComplete="current-password"
                     required
                     disabled={isLoading}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-red-500 pr-10"
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -112,7 +115,7 @@ export function AdminLoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold h-11"
+                className="w-full nwc-gradient hover:opacity-90 text-white font-semibold h-11 transition-opacity"
                 disabled={isLoading || !username || !password}
               >
                 {isLoading ? (
@@ -126,8 +129,11 @@ export function AdminLoginPage() {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-xs text-slate-600">
-              Protected area — authorised personnel only
+            <p className="mt-6 text-center text-xs text-slate-400">
+              Back to{' '}
+              <a href="/login" className="text-nwc-blue underline hover:text-nwc-navy">
+                user login
+              </a>
             </p>
           </div>
         </div>

@@ -14,8 +14,8 @@ export function SummaryCards({ stats, loading }: SummaryCardsProps) {
         label="Total Tasks"
         value={stats?.total ?? 0}
         icon={ListChecks}
-        iconBg="bg-slate-100"
-        iconColor="text-slate-600"
+        iconBg="bg-nwc-light"
+        iconColor="text-nwc-navy"
         loading={loading}
       />
       <SummaryCard
@@ -23,7 +23,7 @@ export function SummaryCards({ stats, loading }: SummaryCardsProps) {
         value={stats?.open ?? 0}
         icon={CircleDot}
         iconBg="bg-blue-100"
-        iconColor="text-blue-600"
+        iconColor="text-nwc-blue"
         loading={loading}
       />
       <SummaryCard

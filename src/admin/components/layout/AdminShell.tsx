@@ -15,7 +15,7 @@ export function AdminShell() {
   }, [initUsers, initConfig])
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-slate-50">
+      <div className="flex h-screen bg-nwc-light">
         <AdminSidebar />
         {/* Content shifts right — sidebar is 64px collapsed / 256px expanded.
             We use a static 64px offset (collapsed default on smaller screens,

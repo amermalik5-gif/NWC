@@ -8,12 +8,13 @@ import {
   CircleDot,
   Flag,
   Settings,
-  Shield,
   ChevronLeft,
   ChevronRight,
   LogOut,
   Activity,
+  ShieldCheck,
 } from 'lucide-react'
+import NwcLogo from '@/assets/nwc-logo-white.svg'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/admin/auth/useAuth'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -59,20 +60,24 @@ export function AdminSidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-slate-950 text-white transition-all duration-300 flex flex-col',
+        'fixed left-0 top-0 z-40 h-screen nwc-gradient text-white transition-all duration-300 flex flex-col',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-slate-800 px-4">
+      <div className="flex h-16 items-center border-b border-white/10 px-3">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-red-600">
-            <Shield className="h-4 w-4 text-white" />
-          </div>
+          <img
+            src={NwcLogo}
+            alt="NWC"
+            className="h-9 w-9 shrink-0 rounded-full bg-white/10 p-0.5"
+          />
           {!collapsed && (
             <div className="overflow-hidden">
-              <p className="text-sm font-semibold leading-none whitespace-nowrap">Admin Panel</p>
-              <p className="text-xs text-slate-400 mt-0.5 whitespace-nowrap">NWC Task Tracker</p>
+              <p className="text-sm font-bold text-white whitespace-nowrap leading-tight">NWC Admin</p>
+              <p className="text-[10px] text-blue-200 whitespace-nowrap flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3" /> Admin Panel
+              </p>
             </div>
           )}
         </div>
@@ -83,7 +88,7 @@ export function AdminSidebar() {
         {NAV_SECTIONS.map((section) => (
           <div key={section.label}>
             {!collapsed && (
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-blue-200/60">
                 {section.label}
               </p>
             )}
@@ -98,11 +103,11 @@ export function AdminSidebar() {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
                       isActive
-                        ? 'bg-red-600/20 text-red-400 border border-red-600/30'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white',
-                      collapsed && 'justify-center px-2'
+                        ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
+                        : 'text-blue-100 hover:bg-white/10 hover:text-white',
+                      collapsed && 'justify-center px-0'
                     )}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
@@ -126,11 +131,11 @@ export function AdminSidebar() {
       </nav>
 
       {/* User + Logout */}
-      <div className="border-t border-slate-800 p-2 space-y-1">
+      <div className="border-t border-white/10 px-2 py-3 space-y-1">
         {!collapsed && user && (
-          <div className="px-3 py-2 rounded-md bg-slate-900">
-            <p className="text-xs font-medium text-slate-200 truncate">{user.name}</p>
-            <p className="text-[10px] text-slate-500 capitalize">{user.role.replace('_', ' ')}</p>
+          <div className="px-3 py-2 mb-1 rounded-lg bg-white/10">
+            <p className="text-xs font-semibold text-white truncate">{user.name}</p>
+            <p className="text-[10px] text-blue-200 capitalize">{user.role.replace('_', ' ')}</p>
           </div>
         )}
         <Tooltip delayDuration={0}>
@@ -138,8 +143,8 @@ export function AdminSidebar() {
             <button
               onClick={logout}
               className={cn(
-                'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-400 hover:bg-red-900/30 hover:text-red-400 transition-colors',
-                collapsed && 'justify-center px-2'
+                'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-colors',
+                collapsed && 'justify-center px-0'
               )}
             >
               <LogOut className="h-4 w-4 shrink-0" />
@@ -152,9 +157,9 @@ export function AdminSidebar() {
         {/* Collapse toggle */}
         <button
           onClick={() => setCollapsed((c) => !c)}
-          className="flex w-full items-center justify-center rounded-md p-2 text-slate-500 hover:bg-slate-800 hover:text-white transition-colors"
+          className="flex w-full items-center justify-center rounded-lg p-2 text-blue-200 hover:bg-white/10 hover:text-white transition-colors"
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </button>
       </div>
     </aside>
