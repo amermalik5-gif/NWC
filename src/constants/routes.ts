@@ -4,7 +4,6 @@ export const ROUTES = {
   TASK_NEW: '/tasks/new',
   TASK_DETAIL: '/tasks/:id',
   TASK_EDIT: '/tasks/:id/edit',
-  WORKLOAD: '/workload',
   CALENDAR: '/calendar',
 } as const
 

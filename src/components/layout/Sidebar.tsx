@@ -7,7 +7,6 @@ import {
   ChevronRight,
   LogOut,
   LogIn,
-  Users,
   Calendar,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,7 +20,6 @@ import NwcLogo from '@/assets/nwc-logo-white.svg'
 const publicNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: ROUTES.DASHBOARD },
   { label: 'All Tasks',  icon: ListChecks,      href: ROUTES.TASKS },
-  { label: 'Workload',   icon: Users,           href: ROUTES.WORKLOAD },
   { label: 'Calendar',   icon: Calendar,        href: ROUTES.CALENDAR },
 ]
 
@@ -29,7 +27,6 @@ const authNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: ROUTES.DASHBOARD },
   { label: 'All Tasks',  icon: ListChecks,      href: ROUTES.TASKS },
   { label: 'New Task',   icon: PlusCircle,      href: ROUTES.TASK_NEW },
-  { label: 'Workload',   icon: Users,           href: ROUTES.WORKLOAD },
   { label: 'Calendar',   icon: Calendar,        href: ROUTES.CALENDAR },
 ]
 
