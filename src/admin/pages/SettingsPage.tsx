@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Save, Bell, Workflow, Settings2, ScrollText, Shield, LogIn, LogOut, Pencil, Trash2, User, Cog } from 'lucide-react'
+import { Save, Bell, Workflow, Settings2, ScrollText, Shield, LogIn, LogOut, Pencil, Trash2, User, Cog, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +17,8 @@ import { useAdminSettingsStore } from '@/admin/store/adminSettingsStore'
 import { useToast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/formatters'
+import { useSlaSettings, useSaveSlaSettings } from '@/hooks/useSlaSettings'
+import type { SlaDaysMap } from '@/services/slaService'
 import type { AuditAction } from '@/admin/types'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
@@ -45,21 +47,53 @@ const ACTION_CONFIG: Record<AuditAction, { label: string; icon: React.ReactNode;
 
 // ─── Tab type ─────────────────────────────────────────────────────────────────
 
-type Tab = 'general' | 'notifications' | 'workflow' | 'audit'
+type Tab = 'general' | 'notifications' | 'workflow' | 'sla' | 'audit'
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'general',       label: 'General',       icon: <Settings2 className="h-4 w-4" /> },
   { id: 'notifications', label: 'Notifications', icon: <Bell className="h-4 w-4" /> },
   { id: 'workflow',      label: 'Workflow',       icon: <Workflow className="h-4 w-4" /> },
+  { id: 'sla',           label: 'SLA',            icon: <Timer className="h-4 w-4" /> },
   { id: 'audit',         label: 'Audit Log',      icon: <ScrollText className="h-4 w-4" /> },
 ]
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+const SLA_SERVICE_LABELS: Record<string, string> = {
+  presentation_design:     'Presentation Design',
+  presentation_translation: 'Presentation Translation',
+  graphic_design:          'Graphic Design',
+  content_writing:         'Content Writing',
+  event_management:        'Event Management',
+}
+
 export function SettingsPage() {
   const { settings, auditLogs, updateSettings } = useAdminSettingsStore()
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<Tab>('general')
+
+  // SLA settings
+  const { data: slaDays, isLoading: slaLoading } = useSlaSettings()
+  const saveSla = useSaveSlaSettings()
+  const [slaLocal, setSlaLocal] = useState<SlaDaysMap | null>(null)
+  const slaValues = slaLocal ?? slaDays ?? {} as SlaDaysMap
+
+  function handleSlaChange(key: string, val: string) {
+    const n = parseInt(val, 10)
+    if (isNaN(n) || n < 1) return
+    setSlaLocal({ ...(slaValues as SlaDaysMap), [key]: n })
+  }
+
+  function handleSlaSave() {
+    if (!slaLocal) return
+    saveSla.mutate(slaLocal, {
+      onSuccess: () => {
+        toast({ title: 'SLA settings saved', description: 'Service SLA days have been updated.' })
+        setSlaLocal(null)
+      },
+      onError: () => toast({ title: 'Save failed', variant: 'destructive' }),
+    })
+  }
 
   // General form
   const {
@@ -257,6 +291,53 @@ export function SettingsPage() {
                   />
                 </div>
               ))}
+            </div>
+          </Card>
+        )}
+
+        {/* ── SLA ─────────────────────────────────────────────────── */}
+        {activeTab === 'sla' && (
+          <Card className="p-6">
+            <div className="max-w-lg space-y-5">
+              <p className="text-sm text-slate-500">
+                Set the number of working days each service type has to be completed.
+                The SLA badge on task details will use these values.
+              </p>
+
+              {slaLoading ? (
+                <p className="text-sm text-slate-400">Loading…</p>
+              ) : (
+                Object.entries(SLA_SERVICE_LABELS).map(([key, label]) => (
+                  <div key={key} className="flex items-center justify-between py-2 border-b last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">{label}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Days from request date until SLA deadline</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={(slaValues as Record<string, number>)[key] ?? ''}
+                        onChange={(e) => handleSlaChange(key, e.target.value)}
+                        className="w-20 text-center"
+                      />
+                      <span className="text-xs text-slate-400">days</span>
+                    </div>
+                  </div>
+                ))
+              )}
+
+              <div className="pt-2">
+                <Button
+                  onClick={handleSlaSave}
+                  disabled={!slaLocal || saveSla.isPending}
+                  className="bg-nwc-blue hover:bg-nwc-dark text-white"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveSla.isPending ? 'Saving…' : 'Save SLA Settings'}
+                </Button>
+              </div>
             </div>
           </Card>
         )}

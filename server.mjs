@@ -543,6 +543,35 @@ app.put('/api/config', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
+// ─── SLA Settings ────────────────────────────────────────────────────────────
+const DEFAULT_SLA_DAYS = {
+  presentation_design: 3,
+  presentation_translation: 2,
+  graphic_design: 5,
+  content_writing: 4,
+  event_management: 7,
+}
+
+app.get('/api/settings/sla', async (_req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT data FROM config WHERE key = 'sla'")
+    res.json(rows[0]?.data ?? DEFAULT_SLA_DAYS)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.put('/api/settings/sla', async (req, res) => {
+  try {
+    const incoming = req.body ?? {}
+    // Merge with defaults so all keys are always present
+    const updated = { ...DEFAULT_SLA_DAYS, ...incoming }
+    await pool.query(
+      "INSERT INTO config (key, data) VALUES ('sla', $1) ON CONFLICT (key) DO UPDATE SET data = $1",
+      [updated]
+    )
+    res.json(updated)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
 // ─── SPA fallback ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))

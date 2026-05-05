@@ -1,5 +1,6 @@
 import { Clock, AlertTriangle, XCircle, CheckCircle2 } from 'lucide-react'
-import { getSlaStatus, SLA_DAYS } from '@/types/task'
+import { getSlaStatus } from '@/types/task'
+import { useSlaSettings } from '@/hooks/useSlaSettings'
 import { cn } from '@/lib/utils'
 import type { Task } from '@/types/task'
 
@@ -9,11 +10,12 @@ interface Props {
 }
 
 export function SlaBadge({ task, showLabel = true }: Props) {
-  const status = getSlaStatus(task)
+  const { data: slaDays } = useSlaSettings()
+  const status = getSlaStatus(task, slaDays)
   if (!status) return null
 
   const serviceType = task.serviceTypes?.[0]
-  const slaDays = serviceType ? SLA_DAYS[serviceType] : null
+  const days = serviceType && slaDays ? slaDays[serviceType] : null
 
   const configs = {
     on_track: {
@@ -40,7 +42,7 @@ export function SlaBadge({ task, showLabel = true }: Props) {
       <Icon className="h-3.5 w-3.5" />
       <span>
         {showLabel ? label : ''}
-        {slaDays && showLabel && ` (SLA: ${slaDays}d)`}
+        {days && showLabel && ` (SLA: ${days}d)`}
       </span>
     </div>
   )

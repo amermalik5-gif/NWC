@@ -106,11 +106,14 @@ export const SLA_DAYS: Record<ServiceType, number> = {
 
 export type SlaStatus = 'on_track' | 'at_risk' | 'breached'
 
-export function getSlaStatus(task: Task): SlaStatus | null {
+export function getSlaStatus(
+  task: Task,
+  customSlaDays?: Partial<Record<ServiceType, number>>
+): SlaStatus | null {
   if (task.status === 'completed' || task.status === 'cancelled') return null
   const serviceType = task.serviceTypes?.[0]
   if (!serviceType) return null
-  const slaDays = SLA_DAYS[serviceType]
+  const slaDays = (customSlaDays?.[serviceType] ?? SLA_DAYS[serviceType])
   const start = new Date(task.requestDate)
   const due = new Date(start)
   due.setDate(due.getDate() + slaDays)
