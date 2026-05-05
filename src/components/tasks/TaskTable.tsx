@@ -27,20 +27,14 @@ interface TaskTableProps {
   pageSize: number
   total: number
   onPageChange: (page: number) => void
+  selectedIds?: Set<string>
+  onSelectionChange?: (ids: Set<string>) => void
 }
 
 function SortButton({
-  column,
-  currentKey,
-  dir,
-  onClick,
-  children,
+  column, currentKey, dir, onClick, children,
 }: {
-  column: SortKey
-  currentKey: SortKey
-  dir: SortDir
-  onClick: (key: SortKey) => void
-  children: React.ReactNode
+  column: SortKey; currentKey: SortKey; dir: SortDir; onClick: (key: SortKey) => void; children: React.ReactNode
 }) {
   const active = column === currentKey
   return (
@@ -49,61 +43,69 @@ function SortButton({
       onClick={() => onClick(column)}
     >
       {children}
-      {active ? (
-        dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-      ) : (
-        <ArrowUpDown className="h-3 w-3 opacity-40" />
-      )}
+      {active
+        ? dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        : <ArrowUpDown className="h-3 w-3 opacity-40" />
+      }
     </button>
   )
 }
 
 export function TaskTable({
-  tasks,
-  loading,
-  filtered,
-  page,
-  pageSize,
-  total,
-  onPageChange,
+  tasks, loading, filtered, page, pageSize, total, onPageChange, selectedIds, onSelectionChange,
 }: TaskTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>('requestDate')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const { SOURCE_LABEL, SERVICE_LABEL } = useConfigOptions()
   const { isAuthenticated } = useUserAuthStore()
 
+  const bulkMode = !!onSelectionChange
+
   const handleSort = (key: SortKey) => {
-    if (key === sortKey) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortDir('asc')
-    }
+    if (key === sortKey) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortKey(key); setSortDir('asc') }
   }
 
   const sorted = [...(tasks ?? [])].sort((a, b) => {
     let av: string | number = ''
     let bv: string | number = ''
-
     switch (sortKey) {
       case 'id': av = a.id; bv = b.id; break
       case 'title': av = a.title.toLowerCase(); bv = b.title.toLowerCase(); break
       case 'status': av = a.status; bv = b.status; break
-      case 'priority': {
-        const order = { low: 1, medium: 2, high: 3, urgent: 4 }
-        av = order[a.priority]; bv = order[b.priority]; break
-      }
+      case 'priority': { const o = { low: 1, medium: 2, high: 3, urgent: 4 }; av = o[a.priority]; bv = o[b.priority]; break }
       case 'dueDate': av = a.dueDate; bv = b.dueDate; break
       case 'requestDate': av = a.requestDate; bv = b.requestDate; break
       case 'assignedTo': av = a.assignedTo.toLowerCase(); bv = b.assignedTo.toLowerCase(); break
     }
-
     if (av < bv) return sortDir === 'asc' ? -1 : 1
     if (av > bv) return sortDir === 'asc' ? 1 : -1
     return 0
   })
 
   const totalPages = Math.ceil(total / pageSize)
+  const allSelected = sorted.length > 0 && sorted.every((t) => selectedIds?.has(t.id))
+
+  const toggleAll = () => {
+    if (!onSelectionChange) return
+    if (allSelected) {
+      const next = new Set(selectedIds)
+      sorted.forEach((t) => next.delete(t.id))
+      onSelectionChange(next)
+    } else {
+      const next = new Set(selectedIds)
+      sorted.forEach((t) => next.add(t.id))
+      onSelectionChange(next)
+    }
+  }
+
+  const toggleOne = (id: string) => {
+    if (!onSelectionChange || !selectedIds) return
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onSelectionChange(next)
+  }
 
   return (
     <Card>
@@ -119,6 +121,16 @@ export function TaskTable({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-slate-50">
+                  {bulkMode && isAuthenticated && (
+                    <th className="px-4 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleAll}
+                        className="h-4 w-4 rounded border-slate-300 accent-nwc-blue"
+                      />
+                    </th>
+                  )}
                   <th className="px-4 py-3 text-left">
                     <SortButton column="id" currentKey={sortKey} dir={sortDir} onClick={handleSort}>ID</SortButton>
                   </th>
@@ -155,13 +167,24 @@ export function TaskTable({
                     key={task.id}
                     className={cn(
                       'border-b last:border-0 hover:bg-slate-50 transition-colors',
-                      isOverdue(task) && 'bg-red-50/30 hover:bg-red-50/60'
+                      isOverdue(task) && 'bg-red-50/30 hover:bg-red-50/60',
+                      selectedIds?.has(task.id) && 'bg-nwc-light hover:bg-nwc-light'
                     )}
                   >
+                    {bulkMode && isAuthenticated && (
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds?.has(task.id) ?? false}
+                          onChange={() => toggleOne(task.id)}
+                          className="h-4 w-4 rounded border-slate-300 accent-nwc-blue"
+                        />
+                      </td>
+                    )}
                     <td className="px-4 py-3">
                       <Link
                         to={taskDetailPath(task.id)}
-                        className="text-xs font-mono font-semibold text-blue-600 hover:underline whitespace-nowrap"
+                        className="text-xs font-mono font-semibold text-nwc-blue hover:underline whitespace-nowrap"
                       >
                         {task.id}
                       </Link>
@@ -169,7 +192,7 @@ export function TaskTable({
                     <td className="px-4 py-3 max-w-[220px]">
                       <Link
                         to={taskDetailPath(task.id)}
-                        className="font-medium text-slate-700 hover:text-blue-600 transition-colors line-clamp-1"
+                        className="font-medium text-slate-700 hover:text-nwc-blue transition-colors line-clamp-1"
                       >
                         {task.title}
                       </Link>
@@ -183,12 +206,8 @@ export function TaskTable({
                         {task.serviceTypes?.map((s) => SERVICE_LABEL[s] ?? s).join(', ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <TaskStatusBadge status={task.status} />
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <TaskPriorityBadge priority={task.priority} />
-                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap"><TaskStatusBadge status={task.status} /></td>
+                    <td className="px-4 py-3 whitespace-nowrap"><TaskPriorityBadge priority={task.priority} /></td>
                     <td className="px-4 py-3 hidden lg:table-cell">
                       <span className="text-xs text-slate-600 whitespace-nowrap">{task.assignedTo.split(' ')[0]}</span>
                     </td>
@@ -196,17 +215,12 @@ export function TaskTable({
                       <span className="text-xs text-slate-500 whitespace-nowrap">{formatDate(task.requestDate)}</span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={cn(
-                        'text-xs font-medium',
-                        isOverdue(task) ? 'text-red-600' : 'text-slate-500'
-                      )}>
+                      <span className={cn('text-xs font-medium', isOverdue(task) ? 'text-red-600' : 'text-slate-500')}>
                         {formatDate(task.dueDate)}
                       </span>
                     </td>
                     {isAuthenticated && (
-                      <td className="px-4 py-3">
-                        <TaskActionMenu task={task} />
-                      </td>
+                      <td className="px-4 py-3"><TaskActionMenu task={task} /></td>
                     )}
                   </tr>
                 ))}
@@ -214,34 +228,15 @@ export function TaskTable({
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t px-4 py-3">
               <p className="text-xs text-slate-500">
                 Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total} tasks
               </p>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(page - 1)}
-                  disabled={page <= 1}
-                  className="h-8"
-                >
-                  Previous
-                </Button>
-                <span className="text-xs text-slate-500">
-                  {page} / {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  className="h-8"
-                >
-                  Next
-                </Button>
+                <Button variant="outline" size="sm" onClick={() => onPageChange(page - 1)} disabled={page <= 1} className="h-8">Previous</Button>
+                <span className="text-xs text-slate-500">{page} / {totalPages}</span>
+                <Button variant="outline" size="sm" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages} className="h-8">Next</Button>
               </div>
             </div>
           )}

@@ -17,6 +17,16 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 })
 
+// ─── SSE clients registry ─────────────────────────────────────────────────────
+const sseClients = new Set()
+
+function broadcastEvent(type, payload) {
+  const data = JSON.stringify({ type, payload, ts: Date.now() })
+  for (const res of sseClients) {
+    try { res.write(`data: ${data}\n\n`) } catch (_) { sseClients.delete(res) }
+  }
+}
+
 // ─── Initial seed data ─────────────────────────────────────────────────────────
 const INITIAL_USERS = [
   { id: 'USR-001', username: 'amerrawahneh', password: 'Rawahneh97', name: 'Amer Rawahneh', email: 'amer.rawahneh@company.com', role: 'admin', status: 'active', department: 'IT' },
@@ -68,43 +78,140 @@ const INITIAL_CONFIG = {
   ],
 }
 
+const INITIAL_TEMPLATES = [
+  {
+    id: 'tpl-1',
+    name: 'Presentation Design Request',
+    description: 'Standard request for designing a new presentation',
+    defaults: {
+      serviceTypes: ['presentation_design'],
+      priority: 'medium',
+      status: 'new',
+      checklist: [
+        { id: 'cl-1', text: 'Receive content from requester', completed: false },
+        { id: 'cl-2', text: 'Apply brand template', completed: false },
+        { id: 'cl-3', text: 'Internal review', completed: false },
+        { id: 'cl-4', text: 'Deliver to requester', completed: false },
+      ],
+    },
+  },
+  {
+    id: 'tpl-2',
+    name: 'Presentation Translation',
+    description: 'Translate an existing presentation to Arabic or English',
+    defaults: {
+      serviceTypes: ['presentation_translation'],
+      priority: 'medium',
+      status: 'new',
+      checklist: [
+        { id: 'cl-1', text: 'Receive source file', completed: false },
+        { id: 'cl-2', text: 'Translate content', completed: false },
+        { id: 'cl-3', text: 'Format & align layout', completed: false },
+        { id: 'cl-4', text: 'Proofreading', completed: false },
+        { id: 'cl-5', text: 'Deliver final file', completed: false },
+      ],
+    },
+  },
+  {
+    id: 'tpl-3',
+    name: 'Graphic Design Request',
+    description: 'Create graphics, banners, or visual assets',
+    defaults: {
+      serviceTypes: ['graphic_design'],
+      priority: 'medium',
+      status: 'new',
+      checklist: [
+        { id: 'cl-1', text: 'Gather brief and requirements', completed: false },
+        { id: 'cl-2', text: 'Initial concepts', completed: false },
+        { id: 'cl-3', text: 'Revisions', completed: false },
+        { id: 'cl-4', text: 'Final delivery', completed: false },
+      ],
+    },
+  },
+  {
+    id: 'tpl-4',
+    name: 'Event / Meeting Coordination',
+    description: 'Plan and coordinate an internal event or meeting',
+    defaults: {
+      serviceTypes: ['event_management'],
+      priority: 'high',
+      status: 'new',
+      checklist: [
+        { id: 'cl-1', text: 'Confirm date, time, venue', completed: false },
+        { id: 'cl-2', text: 'Send invitations', completed: false },
+        { id: 'cl-3', text: 'Arrange catering/equipment', completed: false },
+        { id: 'cl-4', text: 'Prepare agenda', completed: false },
+        { id: 'cl-5', text: 'Post-event follow-up', completed: false },
+      ],
+    },
+  },
+  {
+    id: 'tpl-5',
+    name: 'Content Writing Request',
+    description: 'Write or edit content for internal or external use',
+    defaults: {
+      serviceTypes: ['content_writing'],
+      priority: 'medium',
+      status: 'new',
+      checklist: [
+        { id: 'cl-1', text: 'Receive brief', completed: false },
+        { id: 'cl-2', text: 'First draft', completed: false },
+        { id: 'cl-3', text: 'Review & edits', completed: false },
+        { id: 'cl-4', text: 'Final approval', completed: false },
+      ],
+    },
+  },
+]
+
 // ─── Create tables and seed if empty ──────────────────────────────────────────
 async function initDB() {
   const client = await pool.connect()
   try {
-    // Create tables
     await client.query(`
       CREATE TABLE IF NOT EXISTS tasks (
         id TEXT PRIMARY KEY,
         data JSONB NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
-
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         data JSONB NOT NULL
       );
-
       CREATE TABLE IF NOT EXISTS config (
         key TEXT PRIMARY KEY,
         data JSONB NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS comments (
+        id TEXT PRIMARY KEY,
+        task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+        data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS activity (
+        id TEXT PRIMARY KEY,
+        task_id TEXT NOT NULL,
+        data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS templates (
+        id TEXT PRIMARY KEY,
+        data JSONB NOT NULL
+      );
     `)
 
-    // Seed users if empty
+    // Seed users
     const { rowCount: userCount } = await client.query('SELECT 1 FROM users LIMIT 1')
     if (userCount === 0) {
       for (const user of INITIAL_USERS) {
-        const now = new Date().toISOString()
         await client.query(
           'INSERT INTO users (id, data) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
-          [user.id, { ...user, createdAt: now, lastLogin: null }]
+          [user.id, { ...user, createdAt: new Date().toISOString(), lastLogin: null }]
         )
       }
       console.log('✅ Users seeded')
     }
 
-    // Seed config if empty
+    // Seed config
     const { rowCount: configCount } = await client.query("SELECT 1 FROM config WHERE key='main' LIMIT 1")
     if (configCount === 0) {
       await client.query(
@@ -114,13 +221,25 @@ async function initDB() {
       console.log('✅ Config seeded')
     }
 
+    // Seed templates
+    const { rowCount: tplCount } = await client.query('SELECT 1 FROM templates LIMIT 1')
+    if (tplCount === 0) {
+      for (const tpl of INITIAL_TEMPLATES) {
+        await client.query(
+          'INSERT INTO templates (id, data) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
+          [tpl.id, tpl]
+        )
+      }
+      console.log('✅ Templates seeded')
+    }
+
     console.log('✅ Database ready')
   } finally {
     client.release()
   }
 }
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 async function generateTaskId() {
   const { rows } = await pool.query("SELECT id FROM tasks ORDER BY id DESC")
   const max = rows.reduce((acc, r) => {
@@ -139,6 +258,40 @@ async function generateUserId() {
   return `USR-${String(max + 1).padStart(3, '0')}`
 }
 
+function generateId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+async function logActivity(taskId, authorName, action, field, oldValue, newValue) {
+  const entry = {
+    id: generateId('ACT'),
+    taskId,
+    authorName,
+    action,
+    field: field ?? null,
+    oldValue: oldValue ?? null,
+    newValue: newValue ?? null,
+    createdAt: new Date().toISOString(),
+  }
+  await pool.query(
+    'INSERT INTO activity (id, task_id, data) VALUES ($1, $2, $3)',
+    [entry.id, taskId, entry]
+  )
+  return entry
+}
+
+// ─── SSE endpoint ─────────────────────────────────────────────────────────────
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.flushHeaders()
+  res.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`)
+  sseClients.add(res)
+  req.on('close', () => sseClients.delete(res))
+})
+
 // ─── Auth API ─────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -150,7 +303,6 @@ app.post('/api/auth/login', async (req, res) => {
       u.status === 'active'
     )
     if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
-    // Update lastLogin
     await pool.query(
       'UPDATE users SET data = data || $1 WHERE id = $2',
       [JSON.stringify({ lastLogin: new Date().toISOString() }), user.id]
@@ -200,8 +352,19 @@ app.post('/api/tasks', async (req, res) => {
   try {
     const now = new Date().toISOString()
     const id = await generateTaskId()
-    const task = { ...req.body, id, createdAt: now, updatedAt: now }
+    const task = {
+      checklist: [],
+      recurring: null,
+      templateId: null,
+      ...req.body,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    }
     await pool.query('INSERT INTO tasks (id, data) VALUES ($1, $2)', [id, task])
+    const authorName = req.body.createdBy ?? 'System'
+    await logActivity(id, authorName, 'created this task', null, null, null)
+    broadcastEvent('task_created', { id })
     res.status(201).json(task)
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
@@ -210,8 +373,25 @@ app.put('/api/tasks/:id', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT data FROM tasks WHERE id = $1', [req.params.id])
     if (rows.length === 0) return res.status(404).json({ error: 'Task not found' })
-    const updated = { ...rows[0].data, ...req.body, updatedAt: new Date().toISOString() }
+    const old = rows[0].data
+    const authorName = req.body.updatedBy ?? 'System'
+    const updated = { ...old, ...req.body, updatedAt: new Date().toISOString() }
     await pool.query('UPDATE tasks SET data = $1 WHERE id = $2', [updated, req.params.id])
+
+    // Log activity for key field changes
+    const watched = ['status', 'priority', 'assignedTo', 'dueDate']
+    for (const field of watched) {
+      if (req.body[field] !== undefined && req.body[field] !== old[field]) {
+        await logActivity(
+          req.params.id, authorName,
+          `changed ${field}`,
+          field,
+          String(old[field] ?? ''),
+          String(req.body[field] ?? '')
+        )
+      }
+    }
+    broadcastEvent('task_updated', { id: req.params.id })
     res.json(updated)
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
@@ -219,14 +399,100 @@ app.put('/api/tasks/:id', async (req, res) => {
 app.delete('/api/tasks/:id', async (req, res) => {
   try {
     await pool.query('DELETE FROM tasks WHERE id = $1', [req.params.id])
+    broadcastEvent('task_deleted', { id: req.params.id })
     res.json({ ok: true })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+// Bulk update
+app.post('/api/tasks/bulk', async (req, res) => {
+  try {
+    const { ids, update, updatedBy } = req.body ?? {}
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'ids required' })
+    const now = new Date().toISOString()
+    const results = []
+    for (const id of ids) {
+      const { rows } = await pool.query('SELECT data FROM tasks WHERE id = $1', [id])
+      if (rows.length === 0) continue
+      const old = rows[0].data
+      const updated = { ...old, ...update, updatedAt: now }
+      await pool.query('UPDATE tasks SET data = $1 WHERE id = $2', [updated, id])
+      const watched = ['status', 'priority', 'assignedTo']
+      for (const field of watched) {
+        if (update[field] !== undefined && update[field] !== old[field]) {
+          await logActivity(id, updatedBy ?? 'System', `changed ${field}`, field, String(old[field] ?? ''), String(update[field] ?? ''))
+        }
+      }
+      results.push(updated)
+    }
+    broadcastEvent('tasks_bulk_updated', { ids })
+    res.json({ updated: results.length, tasks: results })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+// ─── Comments API ─────────────────────────────────────────────────────────────
+app.get('/api/tasks/:id/comments', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT data FROM comments WHERE task_id = $1 ORDER BY created_at ASC',
+      [req.params.id]
+    )
+    res.json(rows.map(r => r.data))
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.post('/api/tasks/:id/comments', async (req, res) => {
+  try {
+    const { body, authorName, authorId } = req.body ?? {}
+    if (!body?.trim()) return res.status(400).json({ error: 'Comment body required' })
+    const comment = {
+      id: generateId('CMT'),
+      taskId: req.params.id,
+      authorName: authorName ?? 'Unknown',
+      authorId: authorId ?? '',
+      body: body.trim(),
+      createdAt: new Date().toISOString(),
+    }
+    await pool.query(
+      'INSERT INTO comments (id, task_id, data) VALUES ($1, $2, $3)',
+      [comment.id, req.params.id, comment]
+    )
+    await logActivity(req.params.id, authorName ?? 'Unknown', 'added a comment', null, null, null)
+    broadcastEvent('comment_added', { taskId: req.params.id, commentId: comment.id })
+    res.status(201).json(comment)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.delete('/api/tasks/:taskId/comments/:commentId', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM comments WHERE id = $1', [req.params.commentId])
+    res.json({ ok: true })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+// ─── Activity API ─────────────────────────────────────────────────────────────
+app.get('/api/tasks/:id/activity', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT data FROM activity WHERE task_id = $1 ORDER BY created_at DESC',
+      [req.params.id]
+    )
+    res.json(rows.map(r => r.data))
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+// ─── Templates API ────────────────────────────────────────────────────────────
+app.get('/api/templates', async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data FROM templates ORDER BY id')
+    res.json(rows.map(r => r.data))
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 // ─── Users API ────────────────────────────────────────────────────────────────
 app.get('/api/users', async (_req, res) => {
   try {
-    const { rows } = await pool.query('SELECT data FROM users ORDER BY (data->>\'id\')')
+    const { rows } = await pool.query("SELECT data FROM users ORDER BY (data->>'id')")
     res.json(rows.map(r => r.data))
   } catch (e) { res.status(500).json({ error: e.message }) }
 })

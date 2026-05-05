@@ -44,6 +44,16 @@
   }
 }
 
+@media print {
+  /* Hide sidebar, header actions, filter bar, pagination, bulk bar */
+  aside, .print-hide, button:not(.print-show) { display: none !important; }
+  /* Content takes full width */
+  .ml-60, .ml-16 { margin-left: 0 !important; }
+  /* Clean table for print */
+  table { font-size: 11px; }
+  @page { margin: 1.5cm; }
+}
+
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;

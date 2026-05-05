@@ -72,3 +72,17 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ta
 export async function deleteTask(id: string): Promise<void> {
   await fetch(`${API}/tasks/${id}`, { method: 'DELETE' })
 }
+
+export async function bulkUpdateTasks(
+  ids: string[],
+  update: UpdateTaskInput,
+  updatedBy?: string
+): Promise<{ updated: number; tasks: Task[] }> {
+  const res = await fetch(`${API}/tasks/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, update, updatedBy }),
+  })
+  if (!res.ok) throw new Error('Bulk update failed')
+  return res.json()
+}

@@ -1,16 +1,21 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Pencil, CalendarDays, User, Tag, Briefcase, Building2, StickyNote, Ban } from 'lucide-react'
+import { Pencil, CalendarDays, Building2, StickyNote, Ban, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { TaskStatusBadge } from './TaskStatusBadge'
 import { TaskPriorityBadge } from './TaskPriorityBadge'
+import { SlaBadge } from './SlaBadge'
+import { TaskComments } from './TaskComments'
+import { TaskChecklistView } from './TaskChecklist'
 import { formatDate } from '@/lib/formatters'
 import { isOverdue } from '@/lib/dateHelpers'
 import { taskEditPath } from '@/constants/routes'
 import { useConfigOptions } from '@/hooks/useConfigOptions'
 import { useUserAuthStore } from '@/store/userAuthStore'
-import type { Task } from '@/types/task'
+import { useUpdateTask } from '@/hooks/useTaskMutations'
+import type { Task, ChecklistItem } from '@/types/task'
 
 interface TaskDetailPanelProps {
   task: Task
@@ -28,22 +33,41 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
   const overdue = isOverdue(task)
   const { SOURCE_LABEL, SERVICE_LABEL } = useConfigOptions()
-  const { isAuthenticated } = useUserAuthStore()
+  const { isAuthenticated, user } = useUserAuthStore()
+  const updateTask = useUpdateTask()
+
+  const handleChecklistToggle = (itemId: string, completed: boolean) => {
+    if (!isAuthenticated) return
+    const checklist: ChecklistItem[] = (task.checklist ?? []).map((i) =>
+      i.id === itemId ? { ...i, completed } : i
+    )
+    updateTask.mutate({
+      id: task.id,
+      input: { checklist, updatedBy: user?.name } as any,
+    })
+  }
+
+  const FREQ_LABEL: Record<string, string> = {
+    daily: 'Daily',
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-mono font-semibold text-blue-600">{task.id}</span>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="text-xs font-mono font-semibold text-nwc-blue">{task.id}</span>
             {overdue && (
               <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
                 Overdue
               </span>
             )}
+            <SlaBadge task={task} />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">{task.title}</h2>
+          <h2 className="text-xl font-bold text-nwc-navy">{task.title}</h2>
           {task.description && (
             <p className="mt-2 text-sm text-slate-600 leading-relaxed">{task.description}</p>
           )}
@@ -64,6 +88,12 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
       <div className="flex flex-wrap gap-3">
         <TaskStatusBadge status={task.status} />
         <TaskPriorityBadge priority={task.priority} />
+        {task.recurring && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-nwc-muted bg-nwc-light px-2.5 py-1 text-xs font-medium text-nwc-navy">
+            <RefreshCw className="h-3 w-3" />
+            {FREQ_LABEL[task.recurring.frequency]} (every {task.recurring.interval})
+          </span>
+        )}
       </div>
 
       {/* Details grid */}
@@ -113,7 +143,7 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
         </Card>
       </div>
 
-      {/* Blocker — shown only when task is blocked */}
+      {/* Blocker */}
       {task.status === 'blocked' && task.blocker && (
         <Card className="border-rose-200 bg-rose-50/50">
           <CardHeader className="pb-3">
@@ -126,6 +156,15 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
             <p className="text-sm text-rose-800 whitespace-pre-wrap leading-relaxed">{task.blocker}</p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Checklist */}
+      {(task.checklist?.length ?? 0) > 0 && (
+        <TaskChecklistView
+          items={task.checklist}
+          onToggle={isAuthenticated ? handleChecklistToggle : undefined}
+          readOnly={!isAuthenticated}
+        />
       )}
 
       {/* Notes */}
@@ -142,6 +181,9 @@ export function TaskDetailPanel({ task }: TaskDetailPanelProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Comments + Activity */}
+      <TaskComments taskId={task.id} />
 
       {/* Metadata */}
       <div className="text-xs text-slate-400 space-y-0.5">

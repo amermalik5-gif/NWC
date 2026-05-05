@@ -1,0 +1,19 @@
+{
+  "name": "NWC Task Tracker",
+  "short_name": "NWC Tasks",
+  "description": "National Water Company internal task tracking system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0F7FF",
+  "theme_color": "#11448c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business"]
+}

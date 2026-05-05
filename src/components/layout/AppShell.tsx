@@ -6,11 +6,13 @@ import { useAdminUsersStore } from '@/admin/store/adminUsersStore'
 import { useAdminConfigStore } from '@/admin/store/adminConfigStore'
 import { cn } from '@/lib/utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useSSE } from '@/hooks/useSSE'
 
 export function AppShell() {
   const { sidebarOpen, setSidebarOpen } = useUIStore()
   const initUsers = useAdminUsersStore((s) => s.init)
   const initConfig = useAdminConfigStore((s) => s.init)
+  useSSE()
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
   useEffect(() => {

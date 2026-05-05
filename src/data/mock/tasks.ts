@@ -1,6 +1,13 @@
 import type { Task } from '@/types/task'
 
-export const mockTasks: Task[] = [
+// Cast to allow existing mock tasks to omit the new optional fields
+type MockTask = Omit<Task, 'checklist' | 'recurring' | 'templateId'> & {
+  checklist?: Task['checklist']
+  recurring?: Task['recurring']
+  templateId?: Task['templateId']
+}
+
+const RAW_TASKS: MockTask[] = [
   { id: 'TASK-001', title: 'Q1 Board Meeting Presentation', description: 'Design the executive presentation for Q1 board meeting covering financial performance and strategic initiatives.', requestSource: 'vp_office', serviceTypes: ['presentation_design'], requesterName: 'Mohammed Al-Farsi', assignedTo: 'Sara Mohammed', status: 'completed', priority: 'urgent', blocker: null, requestDate: '2026-01-05', startDate: '2026-01-06', dueDate: '2026-01-12', completionDate: '2026-01-11', notes: 'Delivered on time. Client approved all slides.', attachments: [], createdAt: '2026-01-05T08:00:00Z', updatedAt: '2026-01-11T15:30:00Z' },
   { id: 'TASK-002', title: 'IT Infrastructure Upgrade Proposal', description: 'Create a presentation outlining the proposed network infrastructure upgrades for the data center.', requestSource: 'infrastructure', serviceTypes: ['presentation_design'], requesterName: 'Ahmad Karim', assignedTo: 'Ahmed Al-Rashid', status: 'completed', priority: 'high', blocker: null, requestDate: '2026-01-08', startDate: '2026-01-09', dueDate: '2026-01-20', completionDate: '2026-01-19', notes: '', attachments: [], createdAt: '2026-01-08T09:00:00Z', updatedAt: '2026-01-19T11:00:00Z' },
   { id: 'TASK-003', title: 'Annual Report Arabic Translation', description: 'Translate the 2025 annual report presentation from English to Arabic while preserving formatting.', requestSource: 'strategy', serviceTypes: ['presentation_translation'], requesterName: 'Layla Nasser', assignedTo: 'Nour Hassan', status: 'completed', priority: 'high', blocker: null, requestDate: '2026-01-10', startDate: '2026-01-12', dueDate: '2026-01-25', completionDate: '2026-01-24', notes: 'RTL layout adjusted manually.', attachments: [], createdAt: '2026-01-10T10:00:00Z', updatedAt: '2026-01-24T14:00:00Z' },
@@ -52,3 +59,10 @@ export const mockTasks: Task[] = [
   { id: 'TASK-049', title: 'Strategy Content Overdue', description: 'Write strategy department intranet content refresh for Q1.', requestSource: 'strategy', serviceTypes: ['content_writing'], requesterName: 'Layla Nasser', assignedTo: 'Omar Abdullah', status: 'in_progress', priority: 'medium', blocker: null, requestDate: '2026-02-28', startDate: '2026-03-01', dueDate: '2026-03-28', completionDate: null, notes: 'Draft 2 in review.', attachments: [], createdAt: '2026-02-28T09:00:00Z', updatedAt: '2026-04-01T11:00:00Z' },
   { id: 'TASK-050', title: 'IT Operations Overdue Graphic', description: 'Design IT operations visual identity elements for internal communications.', requestSource: 'it_operations', serviceTypes: ['graphic_design'], requesterName: 'Hassan Al-Mutairi', assignedTo: 'Khalid Ibrahim', status: 'in_progress', priority: 'low', blocker: null, requestDate: '2026-02-20', startDate: '2026-02-22', dueDate: '2026-03-25', completionDate: null, notes: 'Icon set complete, banner designs pending.', attachments: [], createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-30T12:00:00Z' },
 ]
+
+export const mockTasks: Task[] = RAW_TASKS.map((t) => ({
+  checklist: [],
+  recurring: null,
+  templateId: null,
+  ...t,
+})) as Task[]

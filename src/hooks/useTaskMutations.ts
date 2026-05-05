@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTask, updateTask, deleteTask } from '@/services/taskService'
+import { createTask, updateTask, deleteTask, bulkUpdateTasks } from '@/services/taskService'
 import type { CreateTaskInput, UpdateTaskInput } from '@/types/task'
 
 export function useCreateTask() {
@@ -32,6 +32,19 @@ export function useDeleteTask() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteTask(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] })
+      qc.invalidateQueries({ queryKey: ['tasks-all'] })
+      qc.invalidateQueries({ queryKey: ['task-stats'] })
+    },
+  })
+}
+
+export function useBulkUpdateTasks() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ ids, update, updatedBy }: { ids: string[]; update: UpdateTaskInput; updatedBy?: string }) =>
+      bulkUpdateTasks(ids, update, updatedBy),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] })
       qc.invalidateQueries({ queryKey: ['tasks-all'] })

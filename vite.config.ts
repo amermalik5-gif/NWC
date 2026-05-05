@@ -14,8 +14,9 @@ export default defineConfig({
     // Proxy /api calls to the Express backend in development
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://nwc-production.up.railway.app',
         changeOrigin: true,
+        secure: true,
       },
     },
   },

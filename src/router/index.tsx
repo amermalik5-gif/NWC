@@ -8,6 +8,8 @@ import { TaskListPage } from '@/pages/TaskListPage'
 import { TaskDetailPage } from '@/pages/TaskDetailPage'
 import { TaskCreatePage } from '@/pages/TaskCreatePage'
 import { TaskEditPage } from '@/pages/TaskEditPage'
+import { WorkloadPage } from '@/pages/WorkloadPage'
+import { CalendarPage } from '@/pages/CalendarPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ProtectedAppRoute } from '@/components/auth/ProtectedAppRoute'
 import { ROUTES } from '@/constants/routes'
@@ -43,6 +45,8 @@ export const router = createBrowserRouter([
       { path: ROUTES.TASK_NEW, element: <ProtectedAppRoute><TaskCreatePage /></ProtectedAppRoute> },
       { path: ROUTES.TASK_DETAIL, element: <TaskDetailPage /> },
       { path: ROUTES.TASK_EDIT, element: <ProtectedAppRoute><TaskEditPage /></ProtectedAppRoute> },
+      { path: ROUTES.WORKLOAD, element: <WorkloadPage /> },
+      { path: ROUTES.CALENDAR, element: <CalendarPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
