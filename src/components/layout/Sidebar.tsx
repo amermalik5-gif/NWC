@@ -5,9 +5,10 @@ import {
   PlusCircle,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
   LogOut,
   UserCircle,
+  Globe,
+  Calendar,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/store/uiStore'
@@ -30,6 +31,7 @@ export function Sidebar() {
     { label: 'All Tasks',  icon: ListChecks,     href: ROUTES.TASKS, badge: overdueCount > 0 ? overdueCount : 0 },
     { label: 'My Tasks',   icon: UserCircle,      href: ROUTES.MY_TASKS },
     { label: 'New Task',   icon: PlusCircle,      href: ROUTES.TASK_NEW },
+    { label: 'Calendar',   icon: Calendar,        href: '/calendar' },
   ]
 
   function handleLogout() {
@@ -40,18 +42,28 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-slate-900 text-white transition-all duration-300 flex flex-col',
+        'fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300',
         sidebarOpen ? 'w-60' : 'w-16'
       )}
+      style={{
+        background: 'linear-gradient(180deg, #1565C0 0%, #0D47A1 60%, #0A3880 100%)',
+      }}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-slate-700 px-4">
+      <div className={cn(
+        'flex h-16 items-center border-b px-4',
+        'border-white/10'
+      )}>
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-600">
-            <ClipboardList className="h-4 w-4 text-white" />
+          {/* NWC Globe logo */}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-md">
+            <Globe className="h-6 w-6 text-[#0D47A1]" />
           </div>
           {sidebarOpen && (
-            <span className="font-semibold text-sm whitespace-nowrap">Task Tracker</span>
+            <div className="overflow-hidden">
+              <p className="font-bold text-base text-white whitespace-nowrap leading-tight">NWC</p>
+              <p className="text-xs text-blue-200 whitespace-nowrap">Task Tracker</p>
+            </div>
           )}
         </div>
       </div>
@@ -69,10 +81,10 @@ export function Sidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                'relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
                 isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+                  ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
+                  : 'text-blue-100 hover:bg-white/10 hover:text-white',
                 !sidebarOpen && 'justify-center px-0'
               )}
             >
@@ -106,19 +118,20 @@ export function Sidebar() {
       </nav>
 
       {/* User info + logout */}
-      <div className="border-t border-slate-700 px-2 py-3 space-y-1">
+      <div className="border-t border-white/10 px-2 py-3 space-y-1">
         {sidebarOpen && user && (
-          <div className="px-2 py-1 mb-1">
-            <p className="text-xs font-medium text-white truncate">{user.name}</p>
-            <p className="text-xs text-slate-400 capitalize">{user.role.replace('_', ' ')}</p>
+          <div className="mx-1 mb-2 rounded-xl bg-white/10 px-3 py-2.5">
+            <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+            <p className="text-xs text-blue-200 capitalize">{user.role.replace('_', ' ')}</p>
           </div>
         )}
+
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <button
               onClick={handleLogout}
               className={cn(
-                'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors',
+                'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all',
                 !sidebarOpen && 'justify-center px-0'
               )}
             >
@@ -129,10 +142,10 @@ export function Sidebar() {
           {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
         </Tooltip>
 
-        {/* Toggle button */}
+        {/* Collapse toggle */}
         <button
           onClick={toggleSidebar}
-          className="flex w-full items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          className="flex w-full items-center justify-center rounded-xl p-2 text-blue-200 hover:bg-white/10 hover:text-white transition-all"
         >
           {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
         </button>
