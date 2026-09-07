@@ -24,3 +24,6 @@ dist-ssr/
 
 # OS
 .DS_Store
+
+# Runtime data (persisted on server, not tracked in git)
+data.json

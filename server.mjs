@@ -1,31 +1,41 @@
 import express from 'express'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { createHash } from 'crypto'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3000
 
-app.use(express.json())
-app.use(express.static(join(__dirname, 'dist')))
+// ─── Data file path (persists across restarts) ────────────────────────────────
+const DATA_FILE = join(__dirname, 'data.json')
+
+// ─── Simple password hashing (SHA-256, no external deps needed at runtime) ───
+function hashPassword(plain) {
+  return createHash('sha256').update(plain + 'nwc-salt-2025').digest('hex')
+}
+
+function verifyPassword(plain, hashed) {
+  return hashPassword(plain) === hashed
+}
 
 // ─── Initial data ─────────────────────────────────────────────────────────────
-
 const INITIAL_USERS = [
-  { id: 'USR-001', username: 'amerrawahneh', password: 'Rawahneh97', name: 'Amer Rawahneh', email: 'amer.rawahneh@company.com', role: 'admin', status: 'active', department: 'IT', createdAt: '2025-01-01T08:00:00Z', lastLogin: '2026-04-14T09:30:00Z' },
-  { id: 'USR-002', username: 'sara.mohammed', password: 'Sara@2025', name: 'Sara Mohammed', email: 'sara.mohammed@company.com', role: 'manager', status: 'active', department: 'Creative', createdAt: '2025-01-05T08:00:00Z', lastLogin: '2026-04-13T14:20:00Z' },
-  { id: 'USR-003', username: 'ahmed.alrashid', password: 'Ahmed@2025', name: 'Ahmed Al-Rashid', email: 'ahmed.alrashid@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2025-01-10T08:00:00Z', lastLogin: '2026-04-12T11:00:00Z' },
-  { id: 'USR-004', username: 'khalid.ibrahim', password: 'Khalid@2025', name: 'Khalid Ibrahim', email: 'khalid.ibrahim@company.com', role: 'team_member', status: 'active', department: 'Design', createdAt: '2025-01-15T08:00:00Z', lastLogin: '2026-04-11T09:00:00Z' },
-  { id: 'USR-005', username: 'nour.hassan', password: 'Nour@2025', name: 'Nour Hassan', email: 'nour.hassan@company.com', role: 'team_member', status: 'active', department: 'Translation', createdAt: '2025-02-01T08:00:00Z', lastLogin: '2026-04-10T16:00:00Z' },
-  { id: 'USR-006', username: 'omar.abdullah', password: 'Omar@2025', name: 'Omar Abdullah', email: 'omar.abdullah@company.com', role: 'team_member', status: 'active', department: 'Content', createdAt: '2025-02-10T08:00:00Z', lastLogin: '2026-04-09T10:30:00Z' },
-  { id: 'USR-007', username: 'lina.farid', password: 'Lina@2025', name: 'Lina Farid', email: 'lina.farid@company.com', role: 'team_member', status: 'active', department: 'Design', createdAt: '2025-02-15T08:00:00Z', lastLogin: '2026-04-08T13:00:00Z' },
-  { id: 'USR-008', username: 'maya.yousef', password: 'Maya@2025', name: 'Maya Yousef', email: 'maya.yousef@company.com', role: 'team_member', status: 'active', department: 'Events', createdAt: '2025-03-01T08:00:00Z', lastLogin: '2026-04-07T15:45:00Z' },
-  { id: 'USR-009', username: 'faisal.alamin', password: 'Faisal@2025', name: 'Faisal Al-Amin', email: 'faisal.alamin@company.com', role: 'viewer', status: 'active', department: 'Strategy', createdAt: '2025-03-10T08:00:00Z', lastLogin: '2026-04-05T11:00:00Z' },
-  { id: 'USR-010', username: 'rania.kareem', password: 'Rania@2025', name: 'Rania Kareem', email: 'rania.kareem@company.com', role: 'team_member', status: 'inactive', department: 'Content', createdAt: '2025-03-20T08:00:00Z', lastLogin: '2026-03-15T09:00:00Z' },
-  { id: 'USR-011', username: 'mansour', password: 'Mansour@2025', name: 'Mansour', email: 'mansour@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
-  { id: 'USR-012', username: 'areej', password: 'Areej@2025', name: 'Areej', email: 'areej@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
-  { id: 'USR-013', username: 'najah', password: 'Najah@2025', name: 'Najah', email: 'najah@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
-  { id: 'USR-014', username: 'team', password: 'Team@2025', name: 'Team', email: 'team@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
+  { id: 'USR-001', username: 'amerrawahneh', password: hashPassword('Rawahneh97'), name: 'Amer Rawahneh', email: 'amer.rawahneh@company.com', role: 'admin', status: 'active', department: 'IT', createdAt: '2025-01-01T08:00:00Z', lastLogin: '2026-04-14T09:30:00Z' },
+  { id: 'USR-002', username: 'sara.mohammed', password: hashPassword('Sara@2025'), name: 'Sara Mohammed', email: 'sara.mohammed@company.com', role: 'manager', status: 'active', department: 'Creative', createdAt: '2025-01-05T08:00:00Z', lastLogin: '2026-04-13T14:20:00Z' },
+  { id: 'USR-003', username: 'ahmed.alrashid', password: hashPassword('Ahmed@2025'), name: 'Ahmed Al-Rashid', email: 'ahmed.alrashid@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2025-01-10T08:00:00Z', lastLogin: '2026-04-12T11:00:00Z' },
+  { id: 'USR-004', username: 'khalid.ibrahim', password: hashPassword('Khalid@2025'), name: 'Khalid Ibrahim', email: 'khalid.ibrahim@company.com', role: 'team_member', status: 'active', department: 'Design', createdAt: '2025-01-15T08:00:00Z', lastLogin: '2026-04-11T09:00:00Z' },
+  { id: 'USR-005', username: 'nour.hassan', password: hashPassword('Nour@2025'), name: 'Nour Hassan', email: 'nour.hassan@company.com', role: 'team_member', status: 'active', department: 'Translation', createdAt: '2025-02-01T08:00:00Z', lastLogin: '2026-04-10T16:00:00Z' },
+  { id: 'USR-006', username: 'omar.abdullah', password: hashPassword('Omar@2025'), name: 'Omar Abdullah', email: 'omar.abdullah@company.com', role: 'team_member', status: 'active', department: 'Content', createdAt: '2025-02-10T08:00:00Z', lastLogin: '2026-04-09T10:30:00Z' },
+  { id: 'USR-007', username: 'lina.farid', password: hashPassword('Lina@2025'), name: 'Lina Farid', email: 'lina.farid@company.com', role: 'team_member', status: 'active', department: 'Design', createdAt: '2025-02-15T08:00:00Z', lastLogin: '2026-04-08T13:00:00Z' },
+  { id: 'USR-008', username: 'maya.yousef', password: hashPassword('Maya@2025'), name: 'Maya Yousef', email: 'maya.yousef@company.com', role: 'team_member', status: 'active', department: 'Events', createdAt: '2025-03-01T08:00:00Z', lastLogin: '2026-04-07T15:45:00Z' },
+  { id: 'USR-009', username: 'faisal.alamin', password: hashPassword('Faisal@2025'), name: 'Faisal Al-Amin', email: 'faisal.alamin@company.com', role: 'viewer', status: 'active', department: 'Strategy', createdAt: '2025-03-10T08:00:00Z', lastLogin: '2026-04-05T11:00:00Z' },
+  { id: 'USR-010', username: 'rania.kareem', password: hashPassword('Rania@2025'), name: 'Rania Kareem', email: 'rania.kareem@company.com', role: 'team_member', status: 'inactive', department: 'Content', createdAt: '2025-03-20T08:00:00Z', lastLogin: '2026-03-15T09:00:00Z' },
+  { id: 'USR-011', username: 'mansour', password: hashPassword('Mansour@2025'), name: 'Mansour', email: 'mansour@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
+  { id: 'USR-012', username: 'areej', password: hashPassword('Areej@2025'), name: 'Areej', email: 'areej@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
+  { id: 'USR-013', username: 'najah', password: hashPassword('Najah@2025'), name: 'Najah', email: 'najah@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
+  { id: 'USR-014', username: 'team', password: hashPassword('Team@2025'), name: 'Team', email: 'team@company.com', role: 'team_member', status: 'active', department: 'Creative', createdAt: '2026-04-21T08:00:00Z', lastLogin: null },
 ]
 
 const INITIAL_CONFIG = {
@@ -61,14 +71,43 @@ const INITIAL_CONFIG = {
   ],
 }
 
-// ─── In-memory database (shared by all connected clients) ─────────────────────
-const db = {
-  tasks: [],
-  users: INITIAL_USERS.map(u => ({ ...u })),
-  config: JSON.parse(JSON.stringify(INITIAL_CONFIG)),
+// ─── Persistent database (loads from file, saves on every change) ─────────────
+function loadDb() {
+  if (existsSync(DATA_FILE)) {
+    try {
+      const raw = readFileSync(DATA_FILE, 'utf-8')
+      const saved = JSON.parse(raw)
+      console.log(`✅ Loaded data from ${DATA_FILE} (${saved.tasks?.length ?? 0} tasks, ${saved.users?.length ?? 0} users)`)
+      // Merge: always keep saved data, but if no users exist fall back to initial
+      return {
+        tasks: saved.tasks ?? [],
+        users: saved.users?.length ? saved.users : INITIAL_USERS,
+        config: saved.config ?? JSON.parse(JSON.stringify(INITIAL_CONFIG)),
+      }
+    } catch (e) {
+      console.warn('⚠️  Could not parse data file, starting fresh:', e.message)
+    }
+  } else {
+    console.log('📁 No data file found — starting with initial data')
+  }
+  return {
+    tasks: [],
+    users: INITIAL_USERS.map(u => ({ ...u })),
+    config: JSON.parse(JSON.stringify(INITIAL_CONFIG)),
+  }
 }
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+function saveDb() {
+  try {
+    writeFileSync(DATA_FILE, JSON.stringify(db, null, 2), 'utf-8')
+  } catch (e) {
+    console.error('❌ Failed to save data:', e.message)
+  }
+}
+
+const db = loadDb()
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function generateTaskId() {
   const max = db.tasks.reduce((acc, t) => {
     const n = parseInt(t.id.replace('TASK-', ''), 10)
@@ -85,15 +124,23 @@ function generateUserId() {
   return `USR-${String(max + 1).padStart(3, '0')}`
 }
 
+app.use(express.json())
+app.use(express.static(join(__dirname, 'dist')))
+
 // ─── Auth API ─────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body ?? {}
   const user = db.users.find(u =>
     u.username.toLowerCase() === (username ?? '').toLowerCase() &&
-    u.password === password &&
+    verifyPassword(password, u.password) &&
     u.status === 'active'
   )
   if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
+
+  // Update last login
+  user.lastLogin = new Date().toISOString()
+  saveDb()
+
   res.json({
     token: `mock-jwt-${Date.now()}`,
     user: { id: user.id, username: user.username, name: user.name, role: user.role },
@@ -104,11 +151,15 @@ app.post('/api/auth/admin-login', (req, res) => {
   const { username, password } = req.body ?? {}
   const user = db.users.find(u =>
     u.username.toLowerCase() === (username ?? '').toLowerCase() &&
-    u.password === password &&
+    verifyPassword(password, u.password) &&
     u.status === 'active' &&
     (u.role === 'admin' || u.role === 'manager')
   )
   if (!user) return res.status(401).json({ error: 'Invalid username or password.' })
+
+  user.lastLogin = new Date().toISOString()
+  saveDb()
+
   res.json({
     token: `mock-admin-jwt-${Date.now()}`,
     user: { id: user.id, username: user.username, name: user.name, role: user.role },
@@ -128,6 +179,7 @@ app.post('/api/tasks', (req, res) => {
   const now = new Date().toISOString()
   const task = { ...req.body, id: generateTaskId(), createdAt: now, updatedAt: now }
   db.tasks = [task, ...db.tasks]
+  saveDb()
   res.status(201).json(task)
 })
 
@@ -135,32 +187,53 @@ app.put('/api/tasks/:id', (req, res) => {
   const idx = db.tasks.findIndex(t => t.id === req.params.id)
   if (idx === -1) return res.status(404).json({ error: 'Task not found' })
   db.tasks[idx] = { ...db.tasks[idx], ...req.body, updatedAt: new Date().toISOString() }
+  saveDb()
   res.json(db.tasks[idx])
 })
 
 app.delete('/api/tasks/:id', (req, res) => {
   db.tasks = db.tasks.filter(t => t.id !== req.params.id)
+  saveDb()
   res.json({ ok: true })
 })
 
 // ─── Users API ────────────────────────────────────────────────────────────────
-app.get('/api/users', (_req, res) => res.json(db.users))
+app.get('/api/users', (_req, res) => {
+  // Never expose hashed passwords to the client
+  const safe = db.users.map(({ password: _p, ...u }) => u)
+  res.json(safe)
+})
 
 app.post('/api/users', (req, res) => {
-  const user = { ...req.body, id: generateUserId(), createdAt: new Date().toISOString(), lastLogin: null }
+  const { password, ...rest } = req.body
+  const user = {
+    ...rest,
+    password: password ? hashPassword(password) : hashPassword('ChangeMe@2025'),
+    id: generateUserId(),
+    createdAt: new Date().toISOString(),
+    lastLogin: null,
+  }
   db.users = [...db.users, user]
-  res.status(201).json(user)
+  saveDb()
+  const { password: _p, ...safeUser } = user
+  res.status(201).json(safeUser)
 })
 
 app.put('/api/users/:id', (req, res) => {
   const idx = db.users.findIndex(u => u.id === req.params.id)
   if (idx === -1) return res.status(404).json({ error: 'User not found' })
-  db.users[idx] = { ...db.users[idx], ...req.body }
-  res.json(db.users[idx])
+  const { password, ...rest } = req.body
+  const update = { ...rest }
+  if (password) update.password = hashPassword(password)
+  db.users[idx] = { ...db.users[idx], ...update }
+  saveDb()
+  const { password: _p, ...safeUser } = db.users[idx]
+  res.json(safeUser)
 })
 
 app.delete('/api/users/:id', (req, res) => {
   db.users = db.users.filter(u => u.id !== req.params.id)
+  saveDb()
   res.json({ ok: true })
 })
 
@@ -169,12 +242,13 @@ app.get('/api/config', (_req, res) => res.json(db.config))
 
 app.put('/api/config', (req, res) => {
   db.config = { ...db.config, ...req.body }
+  saveDb()
   res.json(db.config)
 })
 
 // ─── SPA fallback ─────────────────────────────────────────────────────────────
-app.get('*', (_req, res) => {
+app.get('/{*path}', (_req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))
 })
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
