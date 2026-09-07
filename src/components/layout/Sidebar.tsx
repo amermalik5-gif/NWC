@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  LogIn,
   UserCircle,
   Calendar,
 } from 'lucide-react'
@@ -57,8 +58,10 @@ export function Sidebar() {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: ROUTES.DASHBOARD },
     { label: 'All Tasks',  icon: ListChecks,     href: ROUTES.TASKS, badge: overdueCount > 0 ? overdueCount : 0 },
-    { label: 'My Tasks',   icon: UserCircle,      href: ROUTES.MY_TASKS },
-    { label: 'New Task',   icon: PlusCircle,      href: ROUTES.TASK_NEW },
+    ...(user ? [
+      { label: 'My Tasks', icon: UserCircle, href: ROUTES.MY_TASKS },
+      { label: 'New Task', icon: PlusCircle, href: ROUTES.TASK_NEW },
+    ] : []),
     { label: 'Calendar',   icon: Calendar,        href: '/calendar' },
   ]
 
@@ -149,21 +152,39 @@ export function Sidebar() {
           </div>
         )}
 
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={handleLogout}
-              className={cn(
-                'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all',
-                !sidebarOpen && 'justify-center px-0'
-              )}
-            >
-              <LogOut className="h-4 w-4 shrink-0" />
-              {sidebarOpen && <span>Sign Out</span>}
-            </button>
-          </TooltipTrigger>
-          {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
-        </Tooltip>
+        {user ? (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleLogout}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all',
+                  !sidebarOpen && 'justify-center px-0'
+                )}
+              >
+                <LogOut className="h-4 w-4 shrink-0" />
+                {sidebarOpen && <span>Sign Out</span>}
+              </button>
+            </TooltipTrigger>
+            {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
+          </Tooltip>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Link
+                to="/login"
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all',
+                  !sidebarOpen && 'justify-center px-0'
+                )}
+              >
+                <LogIn className="h-4 w-4 shrink-0" />
+                {sidebarOpen && <span>Sign In</span>}
+              </Link>
+            </TooltipTrigger>
+            {!sidebarOpen && <TooltipContent side="right">Sign In</TooltipContent>}
+          </Tooltip>
+        )}
 
         <button
           onClick={toggleSidebar}
