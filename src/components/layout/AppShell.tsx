@@ -13,14 +13,7 @@ export function AppShell() {
   const initUsers = useAdminUsersStore((s) => s.init)
   const initConfig = useAdminConfigStore((s) => s.init)
 
-  // Restore saved theme on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('nwc-theme')
-      if (saved === 'dark' || saved === 'light') {
-        document.documentElement.setAttribute('data-theme', saved)
-      }
-    } catch {}
     initUsers()
     initConfig()
   }, [initUsers, initConfig])
