@@ -7,7 +7,6 @@ import {
   ChevronRight,
   LogOut,
   UserCircle,
-  Globe,
   Calendar,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -17,6 +16,35 @@ import { useTaskStats } from '@/hooks/useTaskStats'
 import { DEFAULT_FILTERS } from '@/types/filters'
 import { ROUTES } from '@/constants/routes'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+function NWCLogo() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 56.303 56.303">
+      <defs>
+        <linearGradient id="nwc-lg1" x1="0.398" y1="0.387" x2="0.747" y2="0.929" gradientUnits="objectBoundingBox">
+          <stop offset="0" stopColor="#d3f0f9"/>
+          <stop offset="0.448" stopColor="#a2d0e0"/>
+          <stop offset="1" stopColor="#72a3c4"/>
+        </linearGradient>
+        <linearGradient id="nwc-lg2" x1="0.5" y1="1.175" x2="0.5" y2="-0.175" gradientUnits="objectBoundingBox">
+          <stop offset="0" stopColor="#00af8d"/>
+          <stop offset="0.634" stopColor="#288bc5"/>
+          <stop offset="1" stopColor="#11448c"/>
+        </linearGradient>
+      </defs>
+      <g transform="translate(-1544.888 -26)">
+        <g transform="translate(1544.888 26)">
+          <g transform="translate(0 0)">
+            <circle cx="28.151" cy="28.151" r="28.151" fill="#fff"/>
+            <path d="M1231.43,813.188a21.548,21.548,0,0,1-13.714-4.887,20.956,20.956,0,0,1-7.729-16.237c0-3.68,2.237-9.047,3.917-12.06a24.593,24.593,0,0,0-8.6,19.225,24.044,24.044,0,0,0,.974,6.767,18.505,18.505,0,0,0,5.353,8.937,12.076,12.076,0,0,0,3.84,2.238,13.527,13.527,0,0,0,3.9.859l.177,0q.32.009.641.011a26.755,26.755,0,0,0,16.086-5.408A21.751,21.751,0,0,1,1231.43,813.188Z" transform="translate(-1191.772 -762.985)" fill="#1773b3"/>
+            <path d="M1312.343,746.9a26.615,26.615,0,0,0-4.222-1.5c1.932,3.416,2.094,5.821,2.094,10.026a22.274,22.274,0,0,1-21.628,22.761,23.048,23.048,0,0,0,14.455,4.783,11.34,11.34,0,0,0,4.486-.867c6.411-4.919,9.665-11.366,9.665-20.072C1317.193,755.731,1315.97,751.481,1312.343,746.9Z" transform="translate(-1262.029 -733.795)" fill="url(#nwc-lg1)"/>
+            <path d="M1125.8,705c0,11.069,8.657,22.941,18.441,25.509a23.754,23.754,0,0,1-7.8-17.8,26.575,26.575,0,0,1,21.282-26,26.745,26.745,0,0,1,16.354,1.819c.071.032.142.062.212.094A27.06,27.06,0,0,0,1125.8,705Z" transform="translate(-1124.706 -677.008)" fill="url(#nwc-lg2)"/>
+          </g>
+        </g>
+      </g>
+    </svg>
+  )
+}
 
 export function Sidebar() {
   const location = useLocation()
@@ -50,14 +78,10 @@ export function Sidebar() {
       }}
     >
       {/* Logo */}
-      <div className={cn(
-        'flex h-16 items-center border-b px-4',
-        'border-white/10'
-      )}>
+      <div className="flex h-16 items-center border-b border-white/10 px-3">
         <div className="flex items-center gap-3 overflow-hidden">
-          {/* NWC Globe logo */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-md">
-            <Globe className="h-6 w-6 text-[#0D47A1]" />
+          <div className="shrink-0">
+            <NWCLogo />
           </div>
           {sidebarOpen && (
             <div className="overflow-hidden">
@@ -83,14 +107,13 @@ export function Sidebar() {
               className={cn(
                 'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
                 isActive
-                  ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
+                  ? 'bg-white/20 text-white shadow-sm'
                   : 'text-blue-100 hover:bg-white/10 hover:text-white',
                 !sidebarOpen && 'justify-center px-0'
               )}
             >
               <item.icon className="h-5 w-5 shrink-0" />
               {sidebarOpen && <span className="flex-1">{item.label}</span>}
-              {/* Overdue badge */}
               {item.badge != null && item.badge > 0 && (
                 sidebarOpen
                   ? <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white leading-none">
@@ -142,7 +165,6 @@ export function Sidebar() {
           {!sidebarOpen && <TooltipContent side="right">Sign Out</TooltipContent>}
         </Tooltip>
 
-        {/* Collapse toggle */}
         <button
           onClick={toggleSidebar}
           className="flex w-full items-center justify-center rounded-xl p-2 text-blue-200 hover:bg-white/10 hover:text-white transition-all"
