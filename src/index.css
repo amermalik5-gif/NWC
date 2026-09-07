@@ -42,3 +42,78 @@
     scrollbar-color: hsl(var(--border)) transparent;
   }
 }
+
+/* ── Dark mode via data-theme attribute ──────────────────────────────────────── */
+[data-theme="dark"] {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 96%;
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 96%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 222 47% 7%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 96%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 33% 22%;
+  --input: 217 33% 22%;
+  --ring: 217 91% 60%;
+}
+
+/* ── Print stylesheet ────────────────────────────────────────────────────────── */
+@media print {
+  aside,
+  header,
+  [data-radix-popper-content-wrapper],
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px;
+  }
+
+  /* Remove sidebar offset */
+  main, .ml-60, .ml-16 {
+    margin-left: 0 !important;
+  }
+
+  /* Page title for print */
+  .print-title::before {
+    content: "NWC Task Report — " attr(data-date);
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #000;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: left;
+  }
+
+  thead { background: #f0f0f0 !important; }
+
+  a { color: black; text-decoration: none; }
+
+  @page {
+    margin: 1.5cm;
+    size: A4 landscape;
+  }
+}

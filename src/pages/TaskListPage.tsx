@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, X } from 'lucide-react'
+import { Plus, Search, X, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -53,6 +53,10 @@ export function TaskListPage() {
         subtitle={data ? `${data.total} tasks` : undefined}
         actions={
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="no-print">
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
             <ExportButton tasks={allFiltered ?? []} />
             <Button size="sm" asChild>
               <Link to={ROUTES.TASK_NEW}>

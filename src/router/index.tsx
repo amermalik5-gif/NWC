@@ -8,6 +8,7 @@ import { TaskListPage } from '@/pages/TaskListPage'
 import { TaskDetailPage } from '@/pages/TaskDetailPage'
 import { TaskCreatePage } from '@/pages/TaskCreatePage'
 import { TaskEditPage } from '@/pages/TaskEditPage'
+import { MyTasksPage } from '@/pages/MyTasksPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ROUTES } from '@/constants/routes'
 
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: ROUTES.TASKS, element: <TaskListPage /> },
+      { path: ROUTES.MY_TASKS, element: <MyTasksPage /> },
       { path: ROUTES.TASK_NEW, element: <TaskCreatePage /> },
       { path: ROUTES.TASK_DETAIL, element: <TaskDetailPage /> },
       { path: ROUTES.TASK_EDIT, element: <TaskEditPage /> },

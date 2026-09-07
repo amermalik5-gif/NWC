@@ -33,6 +33,7 @@ export const taskSchema = z.object({
   dueDate: z.string().min(1, 'Due date is required'),
   completionDate: z.string().nullable().default(null),
   notes: z.string().default(''),
+  driveLink: z.string().nullable().default(null),
   attachments: z.array(z.any()).default([]),
 }).superRefine((data, ctx) => {
   if (data.status === 'blocked' && (!data.blocker || data.blocker.trim() === '')) {

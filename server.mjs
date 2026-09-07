@@ -2450,6 +2450,27 @@ app.delete('/api/tasks/:id', (req, res) => {
   res.json({ ok: true })
 })
 
+// ─── Task Comments API ────────────────────────────────────────────────────────
+app.post('/api/tasks/:id/comments', (req, res) => {
+  const idx = db.tasks.findIndex(t => t.id === req.params.id)
+  if (idx === -1) return res.status(404).json({ error: 'Task not found' })
+  const { text, authorName, authorId } = req.body ?? {}
+  if (!text?.trim()) return res.status(400).json({ error: 'Comment text is required' })
+  const comment = {
+    id: `CMT-${Date.now()}`,
+    authorName: authorName ?? 'Unknown',
+    authorId: authorId ?? '',
+    text: text.trim(),
+    createdAt: new Date().toISOString(),
+    type: 'comment',
+  }
+  if (!db.tasks[idx].comments) db.tasks[idx].comments = []
+  db.tasks[idx].comments.push(comment)
+  db.tasks[idx].updatedAt = new Date().toISOString()
+  saveDb()
+  res.status(201).json(db.tasks[idx])
+})
+
 // ─── Users API ────────────────────────────────────────────────────────────────
 app.get('/api/users', (_req, res) => {
   const safe = db.users.map(({ password: _p, ...u }) => u)

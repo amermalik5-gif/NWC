@@ -1,6 +1,7 @@
 export const ROUTES = {
   DASHBOARD: '/',
   TASKS: '/tasks',
+  MY_TASKS: '/my-tasks',
   TASK_NEW: '/tasks/new',
   TASK_DETAIL: '/tasks/:id',
   TASK_EDIT: '/tasks/:id/edit',

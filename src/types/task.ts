@@ -32,6 +32,16 @@ export interface TaskAttachment {
   url: string
 }
 
+export interface TaskComment {
+  id: string
+  authorName: string
+  authorId: string
+  text: string
+  createdAt: string
+  type: 'comment' | 'status_change' | 'system'
+  meta?: { from?: string; to?: string }
+}
+
 export interface Task {
   id: string
   title: string
@@ -50,7 +60,10 @@ export interface Task {
   dueDate: string
   completionDate: string | null
   notes: string
+  /** Google Drive or any external link for reference files */
+  driveLink?: string | null
   attachments: TaskAttachment[]
+  comments?: TaskComment[]
   createdAt: string
   updatedAt: string
 }

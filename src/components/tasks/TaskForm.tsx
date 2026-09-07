@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { getTextDir } from '@/lib/textDir'
 import {
   Select,
   SelectContent,
@@ -42,6 +43,7 @@ const CREATE_DEFAULTS: TaskFormValues = {
   dueDate: '',
   completionDate: null,
   notes: '',
+  driveLink: null,
   attachments: [],
 }
 
@@ -108,12 +110,14 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
-            <Input id="title" {...register('title')} className="mt-1" placeholder="Enter task title" />
+            <Input id="title" {...register('title')} className="mt-1" placeholder="Enter task title"
+              dir={getTextDir(watch('title')) || 'auto'} />
             <FieldError message={errors.title?.message} />
           </div>
           <div>
             <Label htmlFor="description">Description</Label>
-            <Textarea id="description" {...register('description')} className="mt-1" placeholder="Describe the task..." rows={3} />
+            <Textarea id="description" {...register('description')} className="mt-1" placeholder="Describe the task..." rows={3}
+              dir={getTextDir(watch('description')) || 'auto'} />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -274,17 +278,35 @@ export function TaskForm({ defaultValues, taskId, mode }: TaskFormProps) {
         </CardContent>
       </Card>
 
-      {/* Notes */}
+      {/* Notes & Reference */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Notes</CardTitle>
+          <CardTitle className="text-base">Notes & Reference Files</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Textarea
-            {...register('notes')}
-            placeholder="Additional notes or context..."
-            rows={4}
-          />
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              {...register('notes')}
+              placeholder="Additional notes or context..."
+              rows={4}
+              className="mt-1"
+              dir={getTextDir(watch('notes')) || 'auto'}
+            />
+          </div>
+          <div>
+            <Label htmlFor="driveLink">Google Drive Link</Label>
+            <Input
+              id="driveLink"
+              type="url"
+              {...register('driveLink')}
+              className="mt-1"
+              placeholder="https://drive.google.com/..."
+              onChange={(e) => setValue('driveLink', e.target.value || null)}
+            />
+            <p className="text-xs text-slate-400 mt-1">Paste a Google Drive folder or file link for reference materials</p>
+          </div>
         </CardContent>
       </Card>
 
